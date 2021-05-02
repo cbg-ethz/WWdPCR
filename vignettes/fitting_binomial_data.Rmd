@@ -33,6 +33,7 @@ yy2 <- rbinom(T+1, 20, yy1) / 20
 Fit a 3PL model with binomial noise:
 ```{r}
 fit_3PL <- fit_pl(yy2, xx1, 20)
+coef(fit_3PL)
 ```
 
 Plot result:
