@@ -24,7 +24,24 @@ pl2model <- function(x,a,b){
 pl3model <- function(x,a,b,c){
   c + (1-c)*(exp(a*x+b)/(1+exp(a*x+b)))
 }
+attributes(pl3model) <- list(
+  "grad"=function(x,a,b,c){
+  c((1-c)*x*(exp(a*x+b)/(1+exp(a*x+b))),
+    (1-c)*(exp(a*x+b)/(1+exp(a*x+b))),
+    1-(exp(a*x+b)/(1+exp(a*x+b)))
+  )},
+  "logit_grad"=function(x,a,b,c){
+    c(x*exp(a*x + b)/(c + exp(a*x + b)),
+      exp(a*x + b)/(c + exp(a*x + b)),
+      -(exp(a*x + b) + 1)/((c - 1)*(c + exp(a*x + b)))
+    )})
 
+
+
+
+# functions to compute forward and backward reparametrizations
+logit <- function(r){log(r/(1-r))}
+logit_inv <- function(psi){1/(1+exp(-psi))}
 
 #' loglik_binom_n
 #'

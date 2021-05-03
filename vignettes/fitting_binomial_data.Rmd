@@ -3,8 +3,10 @@ title: "fitting_binomial_data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{fitting_binomial_data}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -24,16 +26,18 @@ Simulate data from a 3PL logistic model, with lower asymptote at 0.2, and binomi
 ```{r example1}
 set.seed(43)
 
-T <- 30
-xx1 <- 0:T
+N <- 30
+xx1 <- 0:N
 yy1 <- pl3model(xx1, 0.5, -10, 0.2)
-yy2 <- rbinom(T+1, 20, yy1) / 20
+yy2 <- rbinom(N+1, 20, yy1) / 20
 ```
 
 Fit a 3PL model with binomial noise:
 ```{r}
 fit_3PL <- fit_pl(yy2, xx1, 20)
 coef(fit_3PL)
+confint(fit_3PL)
+
 ```
 
 Plot result:
@@ -41,8 +45,30 @@ Plot result:
 ```{r, fig.dim=c(6, 5)}
 plot(xx1, yy2)
 lines(xx1, yy1)
-lines(xx1, fit_3PL$fitted, col="red")
+lines(xx1, fitted(fit_3PL), col="red")
 legend("bottomright", legend=c("true", "3PL fit"),
        col=c("black", "red"),
        lty=c(1,1), cex=1)
 ```
+
+We can predict, and compute standard errors either in the original linear scale, or in the logit scale. Computing standard errors in the logit scale allows for computing confidence intervals that, when back transformed to the linear scale, are guaranteed to be restricted to the [0,1] range.
+
+```{r, fig.dim=c(6, 5)}
+predicted <- predict(fit_3PL, scale="linear", se=TRUE) #returns a list with "pred" and "se" entries
+plot(xx1, yy2)
+lines(xx1, predicted$pred, col="black")
+
+#plot confints calculated from linear space se
+lines(xx1, predicted$pred - 1.96*predicted$se, lty=2, col="red")
+lines(xx1, predicted$pred + 1.96*predicted$se, lty=2, col="red")
+
+# #plot confints calculated from logit space se
+predicted_logit <-  predict(fit_3PL, scale="logit", se=T)
+lines(xx1, logit_inv(predicted_logit$pred - 1.96*predicted_logit$se), lty=2, col="blue")
+lines(xx1, logit_inv(predicted_logit$pred + 1.96*predicted_logit$se), lty=2, col="blue")
+legend("bottomright", legend=c("3PL fit", "linear confint", "logit confint"),
+       col=c("black", "red", "blue"),
+       lty=c(1,2,2), cex=1)
+```
+
+
