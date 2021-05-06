@@ -10,6 +10,15 @@
 pl2model <- function(x,a,b){
   (exp(a*x+b)/(1+exp(a*x+b)))
 }
+attributes(pl2model) <- list(
+  "grad"=function(x,a,b){
+    c(x*exp(a*x+b)/(1+exp(a*x+b))^2,
+      exp(a*x+b)/(1+exp(a*x+b))^2)
+    },
+  "logit_grad"=function(x,a,b){
+    c(x, 1)
+    })
+
 
 #' pl3model
 #'
@@ -43,16 +52,6 @@ attributes(pl3model) <- list(
 logit <- function(r){log(r/(1-r))}
 logit_inv <- function(psi){1/(1+exp(-psi))}
 
-#' loglik_binom_n
-#'
-#' @param y empirical success frequency
-#' @param p probability of success
-#'
-#' @return log-likelihood kernel
-#' @export
-loglik_binom_n <- function(y,p){
-  y*log(p/(1-p))+log(1-p)
-}
 
 
 

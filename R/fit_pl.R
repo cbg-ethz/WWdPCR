@@ -1,4 +1,20 @@
-fit_pl <- function(ydata, xdata, weights, fitfun=pl3model, likelihood=loglik_binom_n,
+#' fit_pl
+#'
+#' @param ydata response variable
+#' @param xdata independent variable
+#' @param weights weights vector (optional).
+#' @param fitfun fitting function
+#' @param likelihood likelihood function
+#' @param starting_values (named) vector of starting values for optimization
+#' @param lower vector of lower bounds for parameters
+#' @param upper vector of upper bounds for parameters
+#'
+#' @return pl_fit object
+#' @export
+#'
+#' @examples
+fit_pl <- function(ydata, xdata, weights=1, fitfun=pl3model, likelihood=loglik_binom_n,
+                   quasi=F,
                    starting_values=c("a"=0.5, "b"=-10, "c"=0.2),
                    lower=c(-Inf, -Inf, 0), upper=c(Inf, Inf, 1)){
 
@@ -11,15 +27,26 @@ fit_pl <- function(ydata, xdata, weights, fitfun=pl3model, likelihood=loglik_bin
                 method="L-BFGS-B",
                 lower=lower, upper=upper,
                 hessian=T)
+
+  fitted_values <- do.call(fitfun, c(list(xdata), as.list(opt1$par)))
+  if(quasi==T){
+    overdispersion <- attributes(likelihood)$overdispersion(ydata, weights, fitted_values)
+    infl_factor <- 1/(length(overdispersion)-1) * sum(overdispersion)
+  }else{
+    overdispersion <- NULL
+    infl_factor <- 1
+  }
   out <- list(
     estimates=opt1$par,
-    se=sqrt(diag(solve(-1*opt1$hessian))),
-    fitted=do.call(fitfun, c(list(xdata), as.list(opt1$par))),
+    se=sqrt(diag(solve(-1*opt1$hessian)))*infl_factor,
+    fitted=fitted_values,
     ydata=ydata,
     xdata=xdata,
     weights=weights,
     opt=opt1,
-    infl_factor=1,
+    infl_factor=infl_factor,
+    overdispersion=overdispersion,
+    likelihood=opt1$value,
     fitfun=fitfun
   )
   class(out) = "pl_fit"
@@ -66,9 +93,9 @@ predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRU
     # compute standard errors of the fit
     stand.errors <- apply(as.matrix(newdata), 1, function(t){
       grad_eval <- do.call(grad, c(list(t), as.list(x$estimates)))
-      t(grad_eval) %*% (solve(-1*x$opt$hessian)) %*% grad_eval
+      sqrt(t(grad_eval) %*% (solve(-1*x$opt$hessian) * x$infl_factor) %*% grad_eval)
     })
-    out$se <- stand.errors * x$infl_factor
+    out$se <- stand.errors
   }
   out$bla <- 1
   return(out)

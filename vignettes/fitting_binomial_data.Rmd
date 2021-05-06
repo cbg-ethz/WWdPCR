@@ -22,6 +22,8 @@ library(WWdPCR)
 
 # Example 1: simulated data
 
+## Generate simulated data
+
 Simulate data from a 3PL logistic model, with lower asymptote at 0.2, and binomial distribution of the data:
 ```{r example1}
 set.seed(43)
@@ -32,6 +34,8 @@ yy1 <- pl3model(xx1, 0.5, -10, 0.2)
 yy2 <- rbinom(N+1, 20, yy1) / 20
 ```
 
+## Fit model and inspect results
+
 Fit a 3PL model with binomial noise:
 ```{r}
 fit_3PL <- fit_pl(yy2, xx1, 20)
@@ -40,7 +44,7 @@ confint(fit_3PL)
 
 ```
 
-Plot result:
+## Plot result:
 
 ```{r, fig.dim=c(6, 5)}
 plot(xx1, yy2)
@@ -51,9 +55,11 @@ legend("bottomright", legend=c("true", "3PL fit"),
        lty=c(1,1), cex=1)
 ```
 
+## Plot confidence bands for fit 
+
 We can predict, and compute standard errors either in the original linear scale, or in the logit scale. Computing standard errors in the logit scale allows for computing confidence intervals that, when back transformed to the linear scale, are guaranteed to be restricted to the [0,1] range.
 
-```{r, fig.dim=c(6, 5)}
+```{r, fig.dim=c(7, 5)}
 predicted <- predict(fit_3PL, scale="linear", se=TRUE) #returns a list with "pred" and "se" entries
 plot(xx1, yy2)
 lines(xx1, predicted$pred, col="black")
@@ -69,6 +75,119 @@ lines(xx1, logit_inv(predicted_logit$pred + 1.96*predicted_logit$se), lty=2, col
 legend("bottomright", legend=c("3PL fit", "linear confint", "logit confint"),
        col=c("black", "red", "blue"),
        lty=c(1,2,2), cex=1)
+
 ```
+
+
+# Example 2: fitting on Swiss HV69-70del clinical data
+
+## Load and prepare data
+
+We have daily prevalence of the mutation in the sequencing results:
+
+```{r}
+str(clinical_HV6970del)
+```
+
+Let's prepare the data:
+
+```{r}
+# Make numerical values out of the dates, starting at october first 2020
+clinical_del_6970_xx <- as.numeric(as.Date(clinical_HV6970del$date) - as.Date("2020-10-01 00:00:00"))
+# Normalize counts and filter out values before October first
+clinical_del_6970_yy <- (clinical_HV6970del$HV69.70del / clinical_HV6970del$sequenced)[clinical_del_6970_xx >= 0]
+# Make a vector of sample sizes for weights and filter out values before October first
+clinical_del_6970_ww <- (clinical_HV6970del$sequenced)[clinical_del_6970_xx >= 0]
+# Filter out values before October first from the numerical dates
+clinical_del_6970_xx <- clinical_del_6970_xx[clinical_del_6970_xx >= 0]
+```
+
+## Fit and inspect
+
+Fit a 2PL model accounting for overdispersion. We need to play around with starting values a bit. 
+
+```{r}
+clinical_del6970_2PL <- fit_pl(clinical_del_6970_yy, clinical_del_6970_xx, clinical_del_6970_ww,
+                               fitfun = pl2model,
+                               quasi=T, 
+                               starting_values = c("a"=0.1, "b"=-10), 
+                               lower = c(0,-50, 0), upper = c(1, 50, 1))
+confint(clinical_del6970_2PL)
+```
+
+Fit a 3PL model, we can take estimates of the 2PL as initial guesses for the concerned params, and some other "clever" estimates:
+
+```{r}
+clinical_del6970_3PL <- fit_pl(clinical_del_6970_yy, clinical_del_6970_xx, clinical_del_6970_ww,
+                               quasi=T, 
+                               starting_values = c("a"=0.05, "b"=-6.46, 
+                                                   "c"=mean(clinical_del_6970_yy[1:10])), 
+                               lower = c(0,-50, 0), upper = c(1, 50, 1))
+confint(clinical_del6970_3PL)
+```
+
+## Test 3PL vs 2PL
+
+Make a quasi log-likelihood ratio test:
+
+```{r}
+# compute quasi log-likelihood ratio, with inflation factor from 2PL (more conservative)
+llr <- -2*((-1*clinical_del6970_3PL$likelihood/clinical_del6970_2PL$infl_factor) - (-1*clinical_del6970_2PL$likelihood/clinical_del6970_2PL$infl_factor))
+# chisquare test of the log-likelihood ratio
+print(c("2logLr:"=llr, "p-val:"=formatC(1-pchisq(llr, 1), format = "e", digits = 2)) )
+
+```
+
+
+## Plot
+
+```{r, fig.dim=c(7, 5)}
+# plot raw data and fits
+plot(clinical_del_6970_xx, clinical_del_6970_yy,
+     xlab="days since 2020-10-01",
+     ylab="frac. HV69-70del in clinical samples")
+lines(sort(clinical_del_6970_xx),
+      clinical_del6970_3PL$fitted,
+      col="red")
+lines(sort(clinical_del_6970_xx),
+      clinical_del6970_2PL$fitted,
+      col="black")
+
+# make confints through logit reparametrization and plot them
+predicted_3PL_logit <-  predict(clinical_del6970_3PL, scale="logit", se=T)
+polygon(c(clinical_del_6970_xx, rev(clinical_del_6970_xx)),
+        c(logit_inv(predicted_3PL_logit$pred - 1.96*predicted_3PL_logit$se),
+          rev(logit_inv(predicted_3PL_logit$pred + 1.96*predicted_3PL_logit$se))),
+       col=rgb(red=1, green=0, blue=0, alpha=0.1), border=NA)
+predicted_2PL_logit <-  predict(clinical_del6970_2PL, scale="logit", se=T)
+polygon(c(clinical_del_6970_xx, rev(clinical_del_6970_xx)),
+        c(logit_inv(predicted_2PL_logit$pred - 1.96*predicted_2PL_logit$se),
+          rev(logit_inv(predicted_2PL_logit$pred + 1.96*predicted_2PL_logit$se))),
+       col=rgb(red=0, green=0, blue=1, alpha=0.1), border=NA)
+
+# make legend
+legend("bottomright", legend=c("3PL fit", "2PL fit"),
+       col=c("red", "black"), lty=c(1,1), cex=1)
+
+```
+
+## Inspect overdispersion:
+
+It looks like a constant overdispersion factor assumption is ok, and that we don't want a beta binomial distribution (that would imply a linear dependency between overdispersion and sample size). 
+
+``````{r, fig.dim=c(7, 5)}
+plot(clinical_del_6970_ww, log10(clinical_del6970_3PL$overdispersion),
+    xlab="sample size", 
+    ylab="log10 variance ratio", 
+    main="overdispersion vs sample size")
+for (i in 1:100){
+    indxs <- sample(1:length(clinical_del_6970_ww), replace=T, prob=clinical_del_6970_ww)
+    lines(loess.smooth(clinical_del_6970_ww[indxs], log10(clinical_del6970_3PL$overdispersion)[indxs]),
+          col=rgb(red=1, green=0, blue=0, alpha=0.1))
+}
+lines(loess.smooth(clinical_del_6970_ww, log10(clinical_del6970_3PL$overdispersion)), col="red")
+points(clinical_del_6970_ww, log10(clinical_del6970_3PL$overdispersion))
+```
+
 
 
