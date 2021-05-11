@@ -31,7 +31,7 @@ fit_pl <- function(ydata, xdata, weights=1, fitfun=pl3model, likelihood=loglik_b
   fitted_values <- do.call(fitfun, c(list(xdata), as.list(opt1$par)))
   if(quasi==T){
     overdispersion <- attributes(likelihood)$overdispersion(ydata, weights, fitted_values)
-    infl_factor <- 1/(length(overdispersion)-1) * sum(overdispersion)
+    infl_factor <- 1/(length(unlist(overdispersion))-1) * sum(unlist(overdispersion))
   }else{
     overdispersion <- NULL
     infl_factor <- 1
@@ -97,7 +97,15 @@ predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRU
     })
     out$se <- stand.errors
   }
-  out$bla <- 1
   return(out)
+}
+
+logist_confint.plt_fit <- function(x, newdata = NULL, level = 0.95){
+  predicted <-  predict(x, scale="logit", se=TRUE)
+  return(
+    list("lower" = logit_inv(predicted$pred - qnorm(1-(1-level)/2)*predicted$se),
+         "upper" = logit_inv(predicted$pred + qnorm(1-(1-level)/2)*predicted$se))
+         )
+
 }
 

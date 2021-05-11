@@ -1,0 +1,326 @@
+---
+title: "article_figures"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{article_figures}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(WWdPCR)
+library(ggplot2)
+```
+
+# Load and check data
+
+Data is stored as .rda and has been loaded when attaching the package.
+
+```{r}
+str(dPCR_HV6970del)
+str(dPCR_Orf1adel)
+```
+
+# Fit models on dPCR WWTP data
+
+## Fit 3PL on wastewater data
+
+### Fit on HV69-70del
+
+```{r}
+dPCR_HV6970del_3PL <- fit_pl(dPCR_HV6970del[,1:3], dPCR_HV6970del$dayssince,
+                             likelihood = loglik_trinom_prof,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10, "c"=0.01),
+                             lower=c(0, -Inf, 0), upper=c(1, Inf, 1))
+knitr::kable(confint(dPCR_HV6970del_3PL))
+```
+
+### Fit on Orf1a
+
+```{r}
+dPCR_Orf1a_3PL <- fit_pl(dPCR_Orf1adel[,1:3], dPCR_Orf1adel$dayssince,
+                             likelihood = loglik_trinom_prof,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10, "c"=0.01),
+                             lower=c(0, -Inf, 0), upper=c(1, Inf, 1))
+knitr::kable(confint(dPCR_Orf1a_3PL))
+```
+
+## Fit 2PL on wastewater data
+
+### Fit on HV69-70del
+
+```{r}
+dPCR_HV6970del_2PL <- fit_pl(dPCR_HV6970del[,1:3], dPCR_HV6970del$dayssince,
+                             likelihood = loglik_trinom_prof,
+                             fitfun = pl2model,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10),
+                             lower=c(0, -Inf), upper=c(1, Inf))
+knitr::kable(confint(dPCR_HV6970del_2PL))
+```
+
+### Fit on Orf1a
+
+```{r}
+dPCR_Orf1a_2PL <- fit_pl(dPCR_Orf1adel[,1:3], dPCR_Orf1adel$dayssince,
+                             likelihood = loglik_trinom_prof,
+                             fitfun = pl2model,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10),
+                             lower=c(0, -Inf), upper=c(1, Inf))
+knitr::kable(confint(dPCR_Orf1a_2PL))
+```
+
+## Quasi likelihood ratio tests
+
+Using largest inflation factor 
+
+```{r}
+# compute quasi log-likelihood ratio, with inflation factor from 2PL (more conservative)
+dPCR_HV6970_llr <- -2*((-1*dPCR_HV6970del_3PL$likelihood/dPCR_HV6970del_2PL$infl_factor) - (-1*dPCR_HV6970del_3PL$likelihood/dPCR_HV6970del_3PL$infl_factor))
+# chisquare test of the log-likelihood ratio
+knitr::kable(data.frame("2logLr:"=dPCR_HV6970_llr, "p-val:"=formatC(1-pchisq(dPCR_HV6970_llr, 1), format = "e", digits = 2)))
+```
+
+```{r}
+# compute quasi log-likelihood ratio, with inflation factor from 2PL (more conservative)
+dPCR_Orf1a_llr <- -2*((-1*dPCR_Orf1a_3PL$likelihood/dPCR_Orf1a_2PL$infl_factor) - (-1*dPCR_Orf1a_2PL$likelihood/dPCR_Orf1a_2PL$infl_factor))
+# chisquare test of the log-likelihood ratio
+knitr::kable(data.frame("2logLr:"=dPCR_Orf1a_llr, "p-val:"=formatC(1-pchisq(dPCR_Orf1a_llr, 1), format = "e", digits = 2)))
+```
+
+
+
+# Fit models on clinical data
+
+## Fit 3PL on clinical data
+
+### Fit on HV69-70del
+
+```{r}
+clinical_HV6970del <- clinical_HV6970del[(as.Date(clinical_HV6970del$date) >= as.Date("2020-12-07")) & 
+                                           (as.Date(clinical_HV6970del$date) <= as.Date("2021-03-26")), ]
+clinical_HV6970del_3PL <- fit_pl(clinical_HV6970del$HV69.70del/clinical_HV6970del$sequenced,
+                             as.numeric(as.Date(clinical_HV6970del$date)-as.Date("2020-12-07")),
+                             clinical_HV6970del$sequenced,
+                             likelihood = loglik_binom_n,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10, "c"=0.01),
+                             lower=c(0, -Inf, 0), upper=c(1, Inf, 1))
+knitr::kable(confint(clinical_HV6970del_3PL))
+```
+
+### Fit on Orf1a
+
+```{r}
+clinical_ORF1adel <- clinical_ORF1adel[(as.Date(clinical_ORF1adel$date) >= as.Date("2020-12-07")) & 
+                                           (as.Date(clinical_ORF1adel$date) <= as.Date("2021-03-26")), ]
+clinical_ORF1a_3PL <- fit_pl(clinical_ORF1adel$ORF1adel/clinical_ORF1adel$sequenced,
+                             as.numeric(as.Date(clinical_ORF1adel$date)-as.Date("2020-12-07")),
+                             clinical_ORF1adel$sequenced,
+                             likelihood = loglik_binom_n,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10, "c"=0.01),
+                             lower=c(0, -Inf, 0), upper=c(1, Inf, 1))
+knitr::kable(confint(clinical_ORF1a_3PL))
+```
+
+## Fit 2PL on clinical data
+
+### Fit on HV69-70del
+
+```{r}
+clinical_HV6970del_2PL <- fit_pl(clinical_HV6970del$HV69.70del/clinical_HV6970del$sequenced,
+                             as.numeric(as.Date(clinical_HV6970del$date)-as.Date("2020-12-07")),
+                             clinical_HV6970del$sequenced,
+                             fitfun = pl2model,
+                             likelihood = loglik_binom_n,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10),
+                             lower=c(0, -Inf), upper=c(1, Inf))
+knitr::kable(confint(clinical_HV6970del_2PL))
+```
+
+### Fit on Orf1a
+
+```{r}
+clinical_ORF1a_2PL <- fit_pl(clinical_ORF1adel$ORF1adel/clinical_ORF1adel$sequenced,
+                             as.numeric(as.Date(clinical_ORF1adel$date)-as.Date("2020-12-07")),
+                             clinical_ORF1adel$sequenced,
+                             fitfun = pl2model,
+                             likelihood = loglik_binom_n,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10),
+                             lower=c(0, -Inf), upper=c(1, Inf))
+knitr::kable(confint(clinical_ORF1a_2PL))
+```
+
+## Quasi likelihood ratio tests
+
+Using largest inflation factor 
+
+```{r}
+# compute quasi log-likelihood ratio, with inflation factor from 2PL (more conservative)
+clinical_HV6970_llr <- -2*((-1*clinical_HV6970del_3PL$likelihood/clinical_HV6970del_2PL$infl_factor) - (-1*clinical_HV6970del_2PL$likelihood/clinical_HV6970del_2PL$infl_factor))
+# chisquare test of the log-likelihood ratio
+knitr::kable(data.frame("2logLr:"=clinical_HV6970_llr, "p-val:"=formatC(1-pchisq(clinical_HV6970_llr, 1), format = "e", digits = 2)))
+```
+
+```{r}
+# compute quasi log-likelihood ratio, with inflation factor from 2PL (more conservative)
+clinical_ORF1a_llr <- -2*((-1*clinical_ORF1a_3PL$likelihood/clinical_ORF1a_2PL$infl_factor) - (-1*clinical_ORF1a_2PL$likelihood/clinical_ORF1a_2PL$infl_factor))
+# chisquare test of the log-likelihood ratio
+knitr::kable(data.frame("2logLr:"=clinical_ORF1a_llr, "p-val:"=formatC(1-pchisq(clinical_ORF1a_llr, 1), format = "e", digits = 2)))
+```
+
+
+
+
+
+# Plots
+
+```{r, fig.dim=c(7, 5)}
+dPCR_HV6970del_empirical_freqs <- log((dPCR_HV6970del[,1]+dPCR_HV6970del[,2])/apply(dPCR_HV6970del[,1:3], 1, sum)) / log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum))
+
+dPCR_Orf1a_empirical_freqs <- log((dPCR_Orf1adel[,1]+dPCR_Orf1adel[,2])/apply(dPCR_Orf1adel[,1:3], 1, sum)) / log(dPCR_Orf1adel[,1]/apply(dPCR_Orf1adel[,1:3], 1, sum))
+
+ggplot() + 
+  geom_point(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_empirical_freqs, color="dPCR HV69-70del")) +
+  geom_line(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_3PL$fitted, color="dPCR HV69-70del")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_HV6970del$date),
+                  ymin=logist_confint.plt_fit(dPCR_HV6970del_3PL)$lower,
+                  ymax=logist_confint.plt_fit(dPCR_HV6970del_3PL)$upper, fill="dPCR HV69-70del"), alpha=0.2) + 
+
+  
+  geom_point(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_empirical_freqs, color="dPCR Orf1a")) + 
+  geom_line(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_2PL$fitted, color="dPCR Orf1a")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_Orf1adel$date),
+                  ymin=logist_confint.plt_fit(dPCR_Orf1a_2PL)$lower,
+                  ymax=logist_confint.plt_fit(dPCR_Orf1a_2PL)$upper, fill="dPCR Orf1a"), alpha=0.2) + 
+  xlab("date") + ylab("deletion frequency") + guides(fill=FALSE, colour=guide_legend(title="")) +
+  theme_light() + 
+  theme(legend.position="top")
+
+
+```
+
+## By mutations
+
+```{r, fig.dim=c(7, 5)}
+ggplot() + 
+  geom_point(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_empirical_freqs, color="dPCR HV69-70del")) +
+  geom_line(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_3PL$fitted, color="dPCR HV69-70del")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_HV6970del$date),
+                  ymin=logist_confint.plt_fit(dPCR_HV6970del_3PL)$lower,
+                  ymax=logist_confint.plt_fit(dPCR_HV6970del_3PL)$upper, fill="dPCR HV69-70del"), alpha=0.2) + 
+
+  
+  geom_point(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_empirical_freqs, color="dPCR Orf1a")) + 
+  geom_line(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_2PL$fitted, color="dPCR Orf1a")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_Orf1adel$date),
+                  ymin=logist_confint.plt_fit(dPCR_Orf1a_2PL)$lower,
+                  ymax=logist_confint.plt_fit(dPCR_Orf1a_2PL)$upper, fill="dPCR Orf1a"), alpha=0.2) + 
+  xlab("date") + ylab("deletion frequency") + guides(fill=FALSE, colour=guide_legend(title="")) +
+  theme_light() + 
+  theme(legend.position="top")
+```
+
+
+## dPCR data overdispersion
+
+### HV69-70 deletion
+
+```{r, fig.dim=c(7, 5)}
+n <- apply(dPCR_HV6970del[,1:3], 1, sum)
+
+plt1 <- ggplot() + 
+  geom_point(aes(x=n, y=log10(dPCR_HV6970del_3PL$overdispersion[[1]]), col="x1")) + 
+  geom_point(aes(x=n, y=log10(dPCR_HV6970del_3PL$overdispersion[[2]]), col="x2")) 
+
+
+for (i in 1:100){
+    indxs <- sample(1:length(dPCR_HV6970del_3PL$overdispersion[[1]]), replace=T, prob=n)
+    lo <- loess.smooth(n[order(n)][indxs], log10(dPCR_HV6970del_3PL$overdispersion[[1]])[order(n)][indxs])
+    plt1 <- plt1 + 
+      geom_line(aes_q(lo$x, lo$y, col="x1"), alpha=0.1)
+    }
+for (i in 1:100){
+    indxs <- sample(1:length(dPCR_HV6970del_3PL$overdispersion[[2]]), replace=T, prob=n)
+    lo <- loess.smooth(n[order(n)][indxs], log10(dPCR_HV6970del_3PL$overdispersion[[2]])[order(n)][indxs])
+    plt1 <- plt1 + 
+      geom_line(aes_q(lo$x, lo$y, col="x2"), alpha=0.1)
+}
+plt1 <- plt1 + 
+  geom_line(aes(loess.smooth(n[order(n)], log10(dPCR_HV6970del_3PL$overdispersion[[1]])[order(n)])$x,
+                loess.smooth(n[order(n)], log10(dPCR_HV6970del_3PL$overdispersion[[1]])[order(n)])$y,
+                col="x1"))
+plt1 <- plt1 + 
+  geom_line(aes(loess.smooth(n[order(n)], log10(dPCR_HV6970del_3PL$overdispersion[[2]])[order(n)])$x,
+                loess.smooth(n[order(n)], log10(dPCR_HV6970del_3PL$overdispersion[[2]])[order(n)])$y,
+                col="x2"))
+
+plt1 <- plt1 + 
+  xlab("sample size") + ylab("log10 variance ratio") + 
+  guides(fill=FALSE, colour=guide_legend(title="")) +
+  theme_light() + 
+  theme(legend.position="top")
+
+plt1
+
+
+```
+
+
+### ORF1a deletion
+
+```{r, fig.dim=c(7, 5)}
+n <- apply(dPCR_Orf1adel[,1:3], 1, sum)
+
+plt1 <- ggplot() + 
+  geom_point(aes(x=n, y=log10(dPCR_Orf1a_2PL$overdispersion[[1]]), col="x1")) + 
+  geom_point(aes(x=n, y=log10(dPCR_Orf1a_2PL$overdispersion[[2]]), col="x2")) 
+
+
+for (i in 1:100){
+    indxs <- sample(1:length(dPCR_Orf1a_2PL$overdispersion[[1]]), replace=T, prob=n)
+    lo <- loess.smooth(n[order(n)][indxs], log10(dPCR_Orf1a_2PL$overdispersion[[1]])[order(n)][indxs])
+    plt1 <- plt1 + 
+      geom_line(aes_q(lo$x, lo$y, col="x1"), alpha=0.1)
+    }
+for (i in 1:100){
+    indxs <- sample(1:length(dPCR_Orf1a_2PL$overdispersion[[2]]), replace=T, prob=n)
+    lo <- loess.smooth(n[order(n)][indxs], log10(dPCR_Orf1a_2PL$overdispersion[[2]])[order(n)][indxs])
+    plt1 <- plt1 + 
+      geom_line(aes_q(lo$x, lo$y, col="x2"), alpha=0.1)
+}
+plt1 <- plt1 + 
+  geom_line(aes(loess.smooth(n[order(n)], log10(dPCR_Orf1a_2PL$overdispersion[[1]])[order(n)])$x,
+                loess.smooth(n[order(n)], log10(dPCR_Orf1a_2PL$overdispersion[[1]])[order(n)])$y,
+                col="x1"))
+plt1 <- plt1 + 
+  geom_line(aes(loess.smooth(n[order(n)], log10(dPCR_Orf1a_2PL$overdispersion[[2]])[order(n)])$x,
+                loess.smooth(n[order(n)], log10(dPCR_Orf1a_2PL$overdispersion[[2]])[order(n)])$y,
+                col="x2"))
+
+plt1 <- plt1 + 
+  xlab("sample size") + ylab("log10 variance ratio") + 
+  guides(fill=FALSE, colour=guide_legend(title="")) +
+  theme_light() + 
+  theme(legend.position="top")
+
+plt1
+
+
+```
+

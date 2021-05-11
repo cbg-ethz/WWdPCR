@@ -175,7 +175,7 @@ legend("bottomright", legend=c("3PL fit", "2PL fit"),
 
 It looks like a constant overdispersion factor assumption is ok, and that we don't want a beta binomial distribution (that would imply a linear dependency between overdispersion and sample size). 
 
-``````{r, fig.dim=c(7, 5)}
+```{r, fig.dim=c(7, 5)}
 plot(clinical_del_6970_ww, log10(clinical_del6970_3PL$overdispersion),
     xlab="sample size", 
     ylab="log10 variance ratio", 

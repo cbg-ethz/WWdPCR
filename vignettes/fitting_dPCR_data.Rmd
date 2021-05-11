@@ -1,0 +1,161 @@
+---
+title: "fitting_dPCR_data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{fitting_dPCR_data}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(WWdPCR)
+```
+
+# Example on simulated data
+
+## Simulate data
+
+```{r}
+set.seed(42)
+
+T <- 20 #timesteps
+a <- 0.5 #parameters of 3PL
+b <- -6
+c <- 0.1
+N <- 1000 #number of cells
+
+# simulate data
+lambdas <- rnorm(T, 0.1, 0.01)
+
+pl3model <- function(x,a,b,c){c + (1-c)*(exp(a*x+b)/(1+exp(a*x+b)))}
+rs <- pl3model(1:T, a,b,c)
+
+counts <- lapply(1:T, function(t){
+    rmultinom(1, N, c(exp(-lambdas[t]),
+                         exp(-rs[t]*lambdas[t])-exp(-lambdas[t]),
+                         1-exp(-rs[t]*lambdas[t])))
+})
+counts <- t(Reduce(function(...) cbind(...), counts))
+```
+
+
+## Fit 3PL
+
+```{r}
+fit_3PL <- fit_pl(counts, 1:T, likelihood = loglik_trinom_prof, quasi=TRUE)
+confint(fit_3PL)
+
+```
+
+## Plot
+
+```{r, fig.dim=c(7, 5)}
+# compute empircal frequencies in data
+empirical_freqs <- log((counts[,1]+counts[,2])/apply(counts, 1, sum)) / log(counts[,1]/apply(counts, 1, sum))
+
+# plot
+plot(1:T, empirical_freqs, ylim=c(0,1))
+lines(1:T, rs, col="black")
+lines(1:T, fit_3PL$fitted, col="red")
+
+# make confints through logit reparametrization and plot them
+predicted_3PL_logit <-  predict(fit_3PL, scale="logit", se=TRUE)
+polygon(c(1:T, rev(1:T)),
+        c(logit_inv(predicted_3PL_logit$pred - 1.96*predicted_3PL_logit$se),
+          rev(logit_inv(predicted_3PL_logit$pred + 1.96*predicted_3PL_logit$se))),
+       col=rgb(red=1, green=0, blue=0, alpha=0.1), border=NA)
+
+# make legend
+legend("bottomright", legend=c("true", "3PL fit"),
+       col=c("black", "red"), lty=c(1,1), cex=1)
+
+```
+
+
+# Fit ZH dPCR data 
+
+## Load data
+
+```{r}
+str(dPCR_HV6970del)
+
+```
+
+
+## Fit 3PL
+
+```{r}
+dPCR_HV6970del_3PL <- fit_pl(dPCR_HV6970del[,1:3], dPCR_HV6970del$dayssince,
+                             likelihood = loglik_trinom_prof,
+                             quasi=TRUE,
+                             starting_values = c("a"=0.05, "b"=-10, "c"=0.01),
+                             lower=c(0, -Inf, 0), upper=c(1, Inf, 1))
+confint(dPCR_HV6970del_3PL)
+```
+
+## Plot
+
+```{r, fig.dim=c(7, 5)}
+# compute empircal frequencies in data
+dPCR_HV6970del_empirical_freqs <- log((dPCR_HV6970del[,1]+dPCR_HV6970del[,2])/apply(dPCR_HV6970del[,1:3], 1, sum)) / log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum))
+
+# plot
+plot(dPCR_HV6970del$dayssince, dPCR_HV6970del_empirical_freqs, ylim=c(0,1))
+lines(dPCR_HV6970del$dayssince, dPCR_HV6970del_3PL$fitted, col="red")
+
+# make confints through logit reparametrization and plot them
+predicted_dPCR_HV6970del_3PL_logit <-  predict(dPCR_HV6970del_3PL, scale="logit", se=TRUE)
+polygon(c(dPCR_HV6970del$dayssince, rev(dPCR_HV6970del$dayssince)),
+        c(logit_inv(predicted_dPCR_HV6970del_3PL_logit$pred - 1.96*predicted_dPCR_HV6970del_3PL_logit$se),
+          rev(logit_inv(predicted_dPCR_HV6970del_3PL_logit$pred + 1.96*predicted_dPCR_HV6970del_3PL_logit$se))),
+       col=rgb(red=1, green=0, blue=0, alpha=0.1), border=NA)
+
+
+```
+
+
+## Inspect overdispersion
+
+```{r, fig.dim=c(7, 5)}
+n <- apply(dPCR_HV6970del[,1:3], 1, sum)
+plot(n, log10(dPCR_HV6970del_3PL$overdispersion[[1]]),
+    xlab="sample size", 
+    ylab="log10 variance ratio", 
+    main="overdispersion vs sample size",
+    ylim=range(log10(unlist(dPCR_HV6970del_3PL$overdispersion))))
+points(n, log10(dPCR_HV6970del_3PL$overdispersion[[2]]),
+       col="red")
+
+
+for (i in 1:100){
+    indxs <- sample(1:length(dPCR_HV6970del_3PL$overdispersion[[1]]), replace=T, prob=n)
+    lines(loess.smooth(n[order(n)][indxs], log10(dPCR_HV6970del_3PL$overdispersion[[1]])[order(n)][indxs]), col=rgb(red=0, green=0, blue=0, alpha=0.2))
+}
+for (i in 1:100){
+    indxs <- sample(1:length(dPCR_HV6970del_3PL$overdispersion[[1]]), replace=T)
+    lines(loess.smooth(n[order(n)][indxs], log10(dPCR_HV6970del_3PL$overdispersion[[2]])[order(n)][indxs]),
+          col=rgb(red=1, green=0, blue=0, alpha=0.2))
+}
+lines(loess.smooth(n[order(n)], log10(dPCR_HV6970del_3PL$overdispersion[[1]])[order(n)]), col="black", lwd=2)
+lines(loess.smooth(n[order(n)], log10(dPCR_HV6970del_3PL$overdispersion[[2]])[order(n)]), col="red", lwd=2)
+
+
+points(n, log10(dPCR_HV6970del_3PL$overdispersion[[1]]),
+       col="black")
+points(n, log10(dPCR_HV6970del_3PL$overdispersion[[2]]),
+       col="red")
+
+legend("bottomleft", legend=c(expression(x[1]), expression(x[2])),
+       col=c("black", "red"), lty=c(1,1), pch=c(1,1), cex=1)
+```
+
+
