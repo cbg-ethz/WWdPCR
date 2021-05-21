@@ -1,1 +1,11 @@
 exportPattern("^[[:alpha:]]+")
+
+export("logist_confint")
+
+S3method("coef", "pl_fit")
+#S3method("se", "pl_fit")
+S3method("fitted", "pl_fit")
+S3method("confint", "pl_fit")
+S3method("predict", "pl_fit")
+S3method("logist_confint", "pl_fit")
+

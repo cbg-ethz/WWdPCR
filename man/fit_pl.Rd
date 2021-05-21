@@ -2,6 +2,12 @@
 % Please edit documentation in R/fit_pl.R
 \name{fit_pl}
 \alias{fit_pl}
+\alias{coef.pl_fit}
+\alias{se.pl_fit}
+\alias{fitted.pl_fit}
+\alias{confint.pl_fit}
+\alias{predict.pl_fit}
+\alias{logist_confint.plt_fit}
 \title{fit_pl}
 \usage{
 fit_pl(
@@ -10,10 +16,23 @@ fit_pl(
   weights = 1,
   fitfun = pl3model,
   likelihood = loglik_binom_n,
+  quasi = F,
   starting_values = c(a = 0.5, b = -10, c = 0.2),
   lower = c(-Inf, -Inf, 0),
   upper = c(Inf, Inf, 1)
 )
+
+\method{coef}{pl_fit}(x)
+
+\method{se}{pl_fit}(x)
+
+\method{fitted}{pl_fit}(x)
+
+\method{confint}{pl_fit}(x, level = 0.95)
+
+\method{predict}{pl_fit}(x, newdata = NULL, scale = c("linear", "logit"), se = TRUE)
+
+\method{logist_confint}{pl_fit}(x, newdata = NULL, level = 0.95)
 }
 \arguments{
 \item{ydata}{response variable}
@@ -31,6 +50,16 @@ fit_pl(
 \item{lower}{vector of lower bounds for parameters}
 
 \item{upper}{vector of upper bounds for parameters}
+
+\item{x}{an object of class \code{pl_fit}}
+
+\item{level}{confidence level 1-\alpha}
+
+\item{newdata}{an optional vector of observed independent variables with which to predict}
+
+\item{scale}{scale on which to predict, either linear or logit scale}
+
+\item{se}{whether to return the standard errors of the predictions or not}
 }
 \value{
 pl_fit object
