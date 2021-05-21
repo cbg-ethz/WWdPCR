@@ -49,23 +49,40 @@ fit_pl <- function(ydata, xdata, weights=1, fitfun=pl3model, likelihood=loglik_b
     likelihood=opt1$value,
     fitfun=fitfun
   )
-  class(out) = "pl_fit"
+  class(out) <- "pl_fit"
   return(out)
 }
 
-
+#' @method coef pl_fit
+#' @rdname fit_pl
+#' @param x an object of class \code{pl_fit}
+#' @export
 coef.pl_fit <- function(x){
   x$estimates
 }
 
+#' @method se pl_fit
+#' @rdname fit_pl
+#' @param x an object of class \code{pl_fit}
+#' @export
 se.pl_fit <- function(x){
   x$se
 }
 
+#' @method fitted pl_fit
+#' @rdname fit_pl
+#' @param x an object of class \code{pl_fit}
+#' @export
 fitted.pl_fit <- function(x){
   x$fitted
 }
 
+
+#' @method confint pl_fit
+#' @rdname fit_pl
+#' @param x an object of class \code{pl_fit}
+#' @param level confidence level 1-\alpha
+#' @export
 confint.pl_fit <- function(x, level=0.95){
   pars_est_df <- cbind(x$estimates,
                        x$estimates - qnorm(1-(1-level)/2) * x$se,
@@ -74,6 +91,13 @@ confint.pl_fit <- function(x, level=0.95){
   pars_est_df
 }
 
+#' @method predict pl_fit
+#' @rdname fit_pl
+#' @param x an object of class \code{pl_fit}
+#' @param newdata an optional vector of observed independent variables with which to predict
+#' @param scale scale on which to predict, either linear or logit scale
+#' @param se whether to return the standard errors of the predictions or not
+#' @export
 predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRUE){
   if(is.null(newdata)){
     newdata <- x$xdata
@@ -100,6 +124,24 @@ predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRU
   return(out)
 }
 
+#' logist_confint
+#'
+#' @param x an object of class \code{pl_fit}
+#'
+#' @return list of confidence intervals
+#' @export
+#'
+#' @examples
+logist_confint <- function(x) {
+  UseMethod("logist_confint")
+}
+
+#' @method logist_confint pl_fit
+#' @rdname fit_pl
+#' @param x an object of class \code{pl_fit}
+#' @param newdata an optional vector of observed independent variables with which to predict
+#' @param level confidence level 1-\alpha
+#' @export
 logist_confint.plt_fit <- function(x, newdata = NULL, level = 0.95){
   predicted <-  predict(x, scale="logit", se=TRUE)
   return(
@@ -108,4 +150,6 @@ logist_confint.plt_fit <- function(x, newdata = NULL, level = 0.95){
          )
 
 }
+
+
 
