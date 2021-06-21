@@ -1,0 +1,178 @@
+---
+title: "example_confints"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{article_figures}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(WWdPCR)
+```
+
+## Comparison of likelihood surfaces and confidence regions
+
+We plot below the comparison between likelihood surfaces of the product-of-binomial model and the multinomial model, for a special case of $x_0 = 10000, x_1 = 10, x_2 = 100$. We show contours of the confidence regions for $\alpha=0.05, \alpha=0.01, \alpha=0.001$. 
+
+```{r, fig.dim=c(6,6)}
+# log-likelihood based on multinomial distribution derived above
+loglik <- function(x_0, x_1, x_2, r, lambda){
+    -lambda*x_0 + x_1*log(exp(-lambda*r) - exp(-lambda)) + x_2*log(1 - exp(-lambda*r))
+}
+# log-likelihood based on multinomial distribution derived above
+loglik_ind <- function(x_0, x_1, x_2, r, lambda){
+    # log-likelihood based on product of two independent binomial distribution
+    n <- x_0 + x_1 + x_2
+    p1 <- dbinom(x_2, n, r*lambda, log=T)
+    p2 <- dbinom(x_1+x_2, n, lambda, log=T)
+    p1+p2
+}
+
+# function to make standard errors with delta method from two binomials
+se2_r_1 <- function(p1, p2, n1, n2){
+    p1/(n1*(1-p1)*log(1-p2)^2) + p2*log(1-p1)^2/(n2*(1-p2)*log(1-p2)^4)
+}
+
+x0 <- 10000
+x1 <- 10
+x2 <- 100 
+
+l_mle = -log(x0/(x0+x1+x2))
+r_mle = -log((x0+x1)/(x0+x1+x2))/l_mle
+
+# se2 <- se2_r_1(mle*lam_ml, lam_ml, x0+x1+x2, x0+x1+x2)
+
+xxs <- seq(0,1.5,length.out=500)
+yys <- seq(0,0.025,length.out=500)
+grid1 <- outer(xxs, yys, function(x,y){loglik(x0, x1, x2, x, y)})
+grid2 <- outer(xxs, yys, function(x,y){loglik_ind(x0, x1, x2, x, y)})
+
+
+par(mfrow=c(1,1))
+filled.contour(xxs, yys, grid1, xlab=expression(r), ylab=expression(lambda),
+               main="log-likelihood based on\nmultinomial model",
+              plot.axes={
+                  points(r_mle,l_mle, pch=4, lwd=3)
+                  text(r_mle-0.08, l_mle+0.08, "MLE")
+                  contour(xxs, yys, grid1, levels=loglik(x0, x1, x2, r_mle, l_mle)-qchisq(c(0.95,0.99,0.999),1)/2,
+                          add=T, drawlabels=F)
+                  axis(side=1, at=seq(0,1.5,by=0.25)) 
+                  axis(side=2, at=seq(0,0.05,by=round(0.025/3,2)))
+              })
+
+filled.contour(xxs, yys, grid2, xlab=expression(r), ylab=expression(lambda),
+               main="log-likelihood based on\nproduct of binomials model",
+              plot.axes={
+                  points(r_mle,l_mle, pch=4, lwd=3)
+                  text(r_mle-0.08, l_mle+0.08, "MLE")
+                  contour(xxs, yys, grid2, levels=loglik_ind(x0, x1, x2, r_mle, l_mle)-qchisq(c(0.95,0.99,0.999),1)/2,
+                          add=T, drawlabels=F)
+                axis(side=1, at=seq(0,1.5,by=0.25)) 
+                axis(side=2, at=seq(0,0.05,by=round(0.025/3,2)))
+              })
+
+```
+
+## Comparison of confidence intervals for $\hat r$ in typical situations.
+
+We plot below the (estimated) relative profile log-likelihoods based on the multinomial (red/black) and product of binomial (blue) models, for different values of $x_0, x_1, x_2$. We compare the confidence intervals for $\hat r$ obtained by inverting profile likelihoods ratio tests for these two models, and the confidence intervals produced by the delta method (green). 
+
+```{r, fig.dim=c(8,10), warning=FALSE}
+
+# profile log-likelihood in the multinomial model
+lp <- function(x_0, x_1, x_2, r){
+    -1*unlist(lapply(r, function(r_temp){
+        optim(par=list(l=-log(x_0/(x_0+x_1+x_2))),
+          function(x){-loglik(x_0, x_1, x_2, r_temp, x)})$value
+    }))   
+}
+
+# estimated profile log-likelihood in the multinomial model
+le <- function(x_0, x_1, x_2, r){
+    x_0*log(x_0/(x_0 + x_1 + x_2)) +
+    x_1*log(-x_0/(x_0 + x_1 + x_2) + 
+            exp(r*log(x_0/(x_0 + x_1 + x_2)))) + 
+    x_2*log(1 - exp(r*log(x_0/(x_0 + x_1 + x_2))))
+}
+
+r_hat <- function(x_0, x_1, x_2){
+    n <- x_0 + x_1 + x_2
+    l1 <- -log((x_0+x_1)/n)
+    l2 <- -log(x_0/n)
+    l1/l2
+}
+
+# plot (estimated) profile log-likelihoods for different values of counts
+par(mfrow=c(3,2))
+for(tt in list(list(x0=50, x1=10, x2=1),
+            list(x0=50, x1=1, x2=10),
+            list(x0=50, x1=25, x2=25),
+            list(x0=500, x1=250, x2=250),
+            list(x0=20000, x1=3, x2=3),
+            list(x0=20000, x1=10, x2=2))){
+    x0 <- tt[["x0"]]
+    x1 <- tt[["x1"]]
+    x2 <- tt[["x2"]]
+    
+    lam_ml <- -log(x0/(x0+x1+x2))
+
+    rr <- seq(0.01,0.99, length.out=1000)
+    ll0 <- lp(x0, x1, x2, rr)
+    ll1 <- le(x0, x1, x2, rr)
+    ll2 <- loglik_ind(x0, x1, x2, rr, lam_ml)
+    mle <- r_hat(x0, x1, x2)
+    mle_l1 <- loglik(x0, x1, x2, mle, lam_ml)
+    mle_l2 <- loglik_ind(x0, x1, x2, mle, lam_ml)
+
+    lower_e <- uniroot(function(x){2*(le(x0,x1,x2,x) - le(x0,x1,x2,r_hat(x0, x1, x2))) + qchisq(0.95, 1)},
+                           c(0,r_hat(x0, x1, x2)))$root
+    upper_e <- uniroot(function(x){2*(le(x0,x1,x2,x) - le(x0,x1,x2,r_hat(x0, x1, x2))) + qchisq(0.95, 1)},
+                           c(r_hat(x0, x1, x2), 1))$root
+    
+    lower_bin <- uniroot(function(x){2*(loglik_ind(x0,x1,x2,x,lam_ml) - loglik_ind(x0,x1,x2,r_hat(x0, x1, x2),lam_ml)) + qchisq(0.95, 1)},
+                           c(0,r_hat(x0, x1, x2)))$root
+    upper_bin <- uniroot(function(x){2*(loglik_ind(x0,x1,x2,x,lam_ml) - loglik_ind(x0,x1,x2,r_hat(x0, x1, x2),lam_ml)) + qchisq(0.95, 1)},
+                           c(r_hat(x0, x1, x2), 1.4))$root
+
+    se2 <- se2_r_1(mle*lam_ml, lam_ml, x0+x1+x2, x0+x1+x2)
+
+
+    plot(rr, ll1-max(ll1), type="l", col="red", 
+        xlab=expression(r), ylab="relative profile log-likelihood", 
+        main=paste("x0=",x0,", x1=",x1, " x2=",x2, sep=""))
+    lines(rr, ll0-max(ll0), col="black")
+    lines(rr, ll2-max(ll2), col="blue")
+    abline(v=mle)
+    
+    rect(lower_e, min(ll1), upper_e, 10, col=rgb(red=1, green=0, blue=0, alpha=0.1), border=NA)
+    rect(mle-1.96*sqrt(se2), min(ll1), mle+1.96*sqrt(se2), 10, col=rgb(red=0, green=1, blue=0, alpha=0.1), border=NA)
+    rect(lower_bin, min(ll1), upper_bin, 10, col=rgb(red=0, green=0, blue=1, alpha=0.1), border=NA)
+    
+    yrange = range(ll1-max(ll1), finite=T)
+    segments(lower_e, yrange[1]+0.5*diff(yrange), upper_e, yrange[1]+0.5*diff(yrange), col="red")
+    segments(lower_bin, yrange[1]+0.4*diff(yrange), upper_bin, yrange[1]+0.4*diff(yrange), col="blue")
+    segments(mle-1.96*sqrt(se2), yrange[1]+0.3*diff(yrange), mle+1.96*sqrt(se2), yrange[1]+0.3*diff(yrange), col="green")
+    
+    legend("bottomright",
+           legend=c(paste("multinomial model: [", round(lower_e,2), ", ", round(upper_e,2), "]", sep=""),
+                    paste("product of binomials: [", round(lower_bin,2), ", ", round(upper_bin,2), "]", sep=""),
+                    paste("delta method: [", round(mle-1.96*sqrt(se2),2), ", ", round(mle+1.96*sqrt(se2),2), "]", sep="")),
+       col=c("red", "blue", "green"), lty=c(1,1,1), cex=1,
+          bg="white")
+    
+
+
+
+}
+```
+

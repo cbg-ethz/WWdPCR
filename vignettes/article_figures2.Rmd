@@ -1,5 +1,5 @@
 ---
-title: "article_figures"
+title: "article_figures2"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{article_figures}
@@ -32,6 +32,35 @@ str(clinical_HV6970del)
 str(clinical_ORF1adel)
 ```
 
+```{r}
+dPCRdat <- read.csv("DATA_TimeSeries_RAnalysis_4_TN.csv")
+dPCRdat$date <- as.Date(dPCRdat$date, format="%d.%m.%y")
+dPCRdat$dayssince <- as.numeric(dPCRdat$date - as.Date("07.12.20", format="%d.%m.%y"))
+
+
+dPCRdat_hv6970 <- dPCRdat[dPCRdat$Assay == "del6970", ]
+dPCRdat_hv6970 <- dPCRdat_hv6970[!is.na(dPCRdat_hv6970$date), ]
+dPCRdat_hv6970$x0 <- dPCRdat_hv6970$WTpos_NumberOfNegativeDroplets
+dPCRdat_hv6970$x1 <- dPCRdat_hv6970$VarPos._NumberOfPositiveDroplets
+dPCRdat_hv6970$x2 <- dPCRdat_hv6970$WTpos_NumberOfPositiveDroplets
+dPCRdat_hv6970$frac_var <- with(dPCRdat_hv6970, (log(x0/(x0+x1))/log(x0/(x0+x1+x2))))
+
+# plot(dPCRdat_hv6970$date, dPCRdat_hv6970$frac_var)
+
+
+dPCRdat_orf1a <- dPCRdat[dPCRdat$Assay == "orf1a", ]
+dPCRdat_orf1a <- dPCRdat_orf1a[!is.na(dPCRdat_orf1a$date), ]
+dPCRdat_orf1a$x0 <- dPCRdat_orf1a$WTpos_NumberOfNegativeDroplets
+dPCRdat_orf1a$x1 <- dPCRdat_orf1a$VarPos._NumberOfPositiveDroplets
+dPCRdat_orf1a$x2 <- dPCRdat_orf1a$WTpos_NumberOfPositiveDroplets
+dPCRdat_orf1a$frac_var <- with(dPCRdat_orf1a, (log(x0/(x0+x1))/log(x0/(x0+x1+x2))))
+
+# plot(dPCRdat_orf1a$date, dPCRdat_orf1a$frac_var)
+
+dPCR_HV6970del <- dPCRdat_hv6970[,c("x0", "x1", "x2", "date", "dayssince", "frac_var", "Dilutionfactor")]
+dPCR_Orf1adel <- dPCRdat_orf1a[,c("x0", "x1", "x2", "date", "dayssince", "frac_var", "Dilutionfactor")]
+```
+
 
 # Fit models on dPCR WWTP data
 
@@ -43,7 +72,7 @@ str(clinical_ORF1adel)
 dPCR_HV6970del_3PL <- fit_pl(dPCR_HV6970del[,1:3], dPCR_HV6970del$dayssince,
                              likelihood = loglik_trinom_prof,
                              quasi=TRUE,
-                             starting_values = c("a"=0.05, "b"=67, "c"=0.01),
+                             starting_values = c("a"=0.08, "b"=67, "c"=0.01),
                              lower=c(0, -Inf, 0), upper=c(1, Inf, 1))
 knitr::kable(confint(dPCR_HV6970del_3PL))
 ```
@@ -337,9 +366,9 @@ knitr::kable(data.frame("2logLr:"=clinical_ORF1a_llr, "p-val:"=formatC(1-pchisq(
 # Plots
 
 ```{r, fig.dim=c(7, 5)}
-dPCR_HV6970del_empirical_freqs <- log((dPCR_HV6970del[,1]+dPCR_HV6970del[,2])/apply(dPCR_HV6970del[,1:3], 1, sum)) / log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum))
+dPCR_HV6970del_empirical_freqs <- log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:2], 1, sum)) / log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum))
 
-dPCR_Orf1a_empirical_freqs <- log((dPCR_Orf1adel[,1]+dPCR_Orf1adel[,2])/apply(dPCR_Orf1adel[,1:3], 1, sum)) / log(dPCR_Orf1adel[,1]/apply(dPCR_Orf1adel[,1:3], 1, sum))
+dPCR_Orf1a_empirical_freqs <- log((dPCR_Orf1adel[,1])/apply(dPCR_Orf1adel[,1:2], 1, sum)) / log(dPCR_Orf1adel[,1]/apply(dPCR_Orf1adel[,1:3], 1, sum))
 
 ggplot() + 
   geom_point(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_empirical_freqs, color="dPCR HV69-70del")) +
@@ -409,13 +438,23 @@ plt1 <- ggplot() +
   labels = c("wastewater HV69-70del", "clinical HV69-70del", "clinical B.1.1.7")
   ) 
 
+
+dPCR_HV6970del_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_HV6970del, FUN=sum)
+dPCR_HV6970del_agg <- dPCR_HV6970del_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_HV6970del_agg$frac <- log((dPCR_HV6970del_agg[,1])/apply(dPCR_HV6970del_agg[,1:2], 1, sum)) /
+  log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum))
+dPCR_HV6970del_agg$concentration <- -log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_HV6970del_agg$Dilutionfactor
+  
+
+
 plt2 <- ggplot() + 
-  geom_bar(aes(x=as.Date(dPCR_HV6970del$date),
-               y=-log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum)) / 0.0005477004196028817 * 8 / 2,
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration,
                fill="SARS-CoV-2"),
            stat="identity") + 
-  geom_bar(aes(x=as.Date(dPCR_HV6970del$date),
-               y=dPCR_HV6970del_empirical_freqs*-log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum)) / 0.0005477004196028817 * 8 ,
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration * dPCR_HV6970del_agg$frac,
                fill="dPCR HV6970 del"),
            stat="identity") + 
     xlab("date") + ylab("gc/ml") +
@@ -512,16 +551,22 @@ plt1 <- ggplot() +
   labels = c("wastewater ORF1a del", "clinical ORF1a del", "clinical B.1.1.7")
   )
 
-
+dPCR_Orf1adel_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_Orf1adel, FUN=sum)
+dPCR_Orf1adel_agg <- dPCR_Orf1adel_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_Orf1adel_agg$frac <- log((dPCR_Orf1adel_agg[,1])/apply(dPCR_Orf1adel_agg[,1:2], 1, sum)) /
+  log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum))
+dPCR_Orf1adel_agg$concentration <- -log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_Orf1adel_agg$Dilutionfactor
+  
 plt2 <- ggplot() + 
-  geom_bar(aes(x=as.Date(dPCR_Orf1adel$date),
-               y=-log(dPCR_Orf1adel[,1]/apply(dPCR_Orf1adel[,1:3], 1, sum)) / 0.0005477004196028817 * 8 / 2
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration,
                # fill="SARS-CoV-2"
                ),
            stat="identity",
            fill="grey") + 
-  geom_bar(aes(x=as.Date(dPCR_Orf1adel$date),
-               y=dPCR_Orf1a_empirical_freqs*-log(dPCR_Orf1adel[,1]/apply(dPCR_Orf1adel[,1:3], 1, sum)) / 0.0005477004196028817 * 8,
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration * dPCR_Orf1adel_agg$frac,
                fill="dPCR ORF1a del"),
            stat="identity") + 
     xlab("date") + ylab("gc/ml") + guides(fill=FALSE) +
@@ -575,7 +620,9 @@ plt_orf
 ```
 
 ```{r}
+pdf("fitplot_CH.pdf", height = 10, width = 12.5)
 cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
 ```
 
 ## Plot for supplementary
@@ -628,13 +675,22 @@ plt1 <- ggplot() +
   labels = c("wastewater HV69-70del", "clinical HV69-70del", "clinical B.1.1.7")
   ) 
 
+dPCR_HV6970del_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_HV6970del, FUN=sum)
+dPCR_HV6970del_agg <- dPCR_HV6970del_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_HV6970del_agg$frac <- log((dPCR_HV6970del_agg[,1])/apply(dPCR_HV6970del_agg[,1:2], 1, sum)) /
+  log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum))
+dPCR_HV6970del_agg$concentration <- -log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_HV6970del_agg$Dilutionfactor
+  
+
+
 plt2 <- ggplot() + 
-  geom_bar(aes(x=as.Date(dPCR_HV6970del$date),
-               y=-log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum)) / 0.0005477004196028817 * 8 / 2,
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration,
                fill="SARS-CoV-2"),
            stat="identity") + 
-  geom_bar(aes(x=as.Date(dPCR_HV6970del$date),
-               y=dPCR_HV6970del_empirical_freqs*-log(dPCR_HV6970del[,1]/apply(dPCR_HV6970del[,1:3], 1, sum)) / 0.0005477004196028817 * 8 / 2 ,
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration * dPCR_HV6970del_agg$frac,
                fill="dPCR HV6970 del"),
            stat="identity") + 
     xlab("date") + ylab("gc/ml") +
@@ -731,16 +787,22 @@ plt1 <- ggplot() +
   labels = c("wastewater ORF1a del", "clinical ORF1a del", "clinical B.1.1.7")
   )
 
-
+dPCR_Orf1adel_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_Orf1adel, FUN=sum)
+dPCR_Orf1adel_agg <- dPCR_Orf1adel_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_Orf1adel_agg$frac <- log((dPCR_Orf1adel_agg[,1])/apply(dPCR_Orf1adel_agg[,1:2], 1, sum)) /
+  log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum))
+dPCR_Orf1adel_agg$concentration <- -log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_Orf1adel_agg$Dilutionfactor
+  
 plt2 <- ggplot() + 
-  geom_bar(aes(x=as.Date(dPCR_Orf1adel$date),
-               y=-log(dPCR_Orf1adel[,1]/apply(dPCR_Orf1adel[,1:3], 1, sum)) / 0.0005477004196028817 * 8 / 2
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration,
                # fill="SARS-CoV-2"
                ),
            stat="identity",
            fill="grey") + 
-  geom_bar(aes(x=as.Date(dPCR_Orf1adel$date),
-               y=dPCR_Orf1a_empirical_freqs*-log(dPCR_Orf1adel[,1]/apply(dPCR_Orf1adel[,1:3], 1, sum)) / 0.0005477004196028817 * 8 / 2,
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration * dPCR_Orf1adel_agg$frac,
                fill="dPCR ORF1a del"),
            stat="identity") + 
     xlab("date") + ylab("gc/ml") + guides(fill=FALSE) +
@@ -791,15 +853,18 @@ plt_orf <- ggpubr::ggarrange(plt1 + xlab(""),
                              plt4, heights = c(2.5,1,1,1),
                     ncol = 1, align = "v", labels=c("B", "D", "F", "H"))
 
+
 ```
 
 ```{r}
+pdf("fitplot_ZH.pdf", height = 10, width = 12.5)
 cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
 ```
 
 
 
-## Plot all
+## Plot all 
 
 ```{r}
 points_alpha <- 0.8
@@ -930,8 +995,12 @@ plt1 <- plt1 +
   theme_light() + 
   theme(legend.position="top")
 
-plt1
+plt1 <- plt1 + geom_text(aes(x=max(n) - diff(range(n))*0.2,
+                  y=max(log10(unlist(dPCR_HV6970del_3PL$overdispersion))) - diff(range(log10(unlist(dPCR_HV6970del_3PL$overdispersion))))*0.95,
+                  label=paste("infl.factor=", round(dPCR_HV6970del_3PL$infl_factor,2), sep="")))
 
+hv6970overdisp <- plt1
+hv6970overdisp
 
 ```
 
@@ -973,8 +1042,65 @@ plt1 <- plt1 +
   theme_light() + 
   theme(legend.position="top")
 
-plt1
+plt1 <- plt1 + geom_text(aes(x=max(n) - diff(range(n))*0.2,
+                  y=max(log10(unlist(dPCR_Orf1a_2PL$overdispersion))) - diff(range(log10(unlist(dPCR_Orf1a_2PL$overdispersion))))*0.95,
+                  label=paste("infl.factor=", round(dPCR_Orf1a_2PL$infl_factor,2), sep="")))
+
+orf1aoverdisp <- plt1
 
 
+```
+
+### Clinical data
+
+```{r}
+
+overdisp_plot <- function(model){
+  n <- model$weights
+  overdisp <- model$overdispersion
+  plt1 <- ggplot() + 
+    geom_point(aes(x=n, y=log10(overdisp))) 
+  
+  
+  for (i in 1:100){
+      indxs <- sample(1:length(overdisp), replace=T, prob=n)
+      lo <- loess.smooth(n[order(n)][indxs], log10(overdisp)[order(n)][indxs])
+      plt1 <- plt1 + 
+        geom_line(aes_q(lo$x, lo$y), alpha=0.1)
+      }
+  
+  plt1 <- plt1 + 
+    geom_line(aes(loess.smooth(n[order(n)], log10(overdisp)[order(n)])$x,
+                  loess.smooth(n[order(n)], log10(overdisp)[order(n)])$y))
+  
+  
+  plt1 <- plt1 + 
+    xlab("sample size") + ylab("log10 variance ratio") + 
+    guides(fill=FALSE, colour=guide_legend(title="")) +
+    theme_light() + 
+    theme(legend.position="top")
+  
+  
+  plt1 <- plt1 + 
+    geom_text(aes(x=max(n) - diff(range(n))*0.2,
+                  y=max(log10(overdisp)) - diff(range(log10(overdisp)))*0.05,
+                  label=paste("infl.factor=", round(model$infl_factor,2), sep="")))
+  return(plt1)
+}
+
+pdf("overdisp_plot.pdf", height = 10, width = 12.5)
+ggpubr::ggarrange(
+  hv6970overdisp,
+  orf1aoverdisp,
+  overdisp_plot(clinical_models$Switzerland$HV6970del$fit_3pl),
+  overdisp_plot(clinical_models$Zurich$HV6970del$fit_3pl),
+  overdisp_plot(clinical_models$Switzerland$ORF1adel$fit_3pl),
+  overdisp_plot(clinical_models$Zurich$ORF1adel$fit_3pl),
+  overdisp_plot(clinical_models$Switzerland$B117$fit_2pl),
+  overdisp_plot(clinical_models$Zurich$B117$fit_2pl),
+  ncol = 2, nrow = 4,
+  align = "v", 
+  labels=LETTERS[1:8])
+dev.off()
 ```
 

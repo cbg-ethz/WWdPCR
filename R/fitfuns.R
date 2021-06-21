@@ -8,15 +8,15 @@
 #' @details returns a logistic curve with bottom asymptote at 0, such that: \eqn{r(x;a,b) = \frac{\exp(ax+b)}{1+exp(a*x+b)}}
 #' @export
 pl2model <- function(x,a,b){
-  (exp(a*x+b)/(1+exp(a*x+b)))
+  (exp(a*(x-b))/(1+exp(a*(x-b))))
 }
 attributes(pl2model) <- list(
   "grad"=function(x,a,b){
-    c(x*exp(a*x+b)/(1+exp(a*x+b))^2,
-      exp(a*x+b)/(1+exp(a*x+b))^2)
+    c((x-b)*exp(a*(x-b))/(1+exp(a*(x-b)))^2,
+      a*exp(a*(x-b))/(1+exp(a*(x-b)))^2)
     },
   "logit_grad"=function(x,a,b){
-    c(x, 1)
+    c(x-b, -a)
     })
 
 
@@ -31,18 +31,18 @@ attributes(pl2model) <- list(
 #' @details returns a logistic curve with bottom asymptote not at 0 but at parameter c, such that: \eqn{r(x;a,b,c) = c + (1-c) \frac{\exp(ax+b)}{1+exp(a*x+b)}}
 #' @export
 pl3model <- function(x,a,b,c){
-  c + (1-c)*(exp(a*x+b)/(1+exp(a*x+b)))
+  c + (1-c)*(exp(a*(x-b))/(1+exp(a*(x-b))))
 }
 attributes(pl3model) <- list(
   "grad"=function(x,a,b,c){
-  c((1-c)*x*(exp(a*x+b)/(1+exp(a*x+b))),
-    (1-c)*(exp(a*x+b)/(1+exp(a*x+b))),
-    1-(exp(a*x+b)/(1+exp(a*x+b)))
+  c((c-1)*(b-x)*(exp(a*(x-b))/(1+exp(a*(x-b)))^2),
+    a*(c-1)*(exp(a*(x-b))/(1+exp(a*(x-b)))^2),
+    1/(1+exp(a*(x-b)))
   )},
   "logit_grad"=function(x,a,b,c){
-    c(x*exp(a*x + b)/(c + exp(a*x + b)),
-      exp(a*x + b)/(c + exp(a*x + b)),
-      -(exp(a*x + b) + 1)/((c - 1)*(c + exp(a*x + b)))
+    c(-(-b + x)*exp(a*(-b + x))/(-c - exp(a*(-b + x))),
+      a*exp(a*(-b + x))/(-c - exp(a*(-b + x))),
+      -(1 + exp(-a*(b - x)))*exp(a*(b - x))/((c - 1)*(c*exp(a*(b - x)) + 1))
     )})
 
 
