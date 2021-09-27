@@ -28,10 +28,10 @@ loglik_trinom_prof <- function(y, r){
   x_0 <- y[,1]
   x_1 <- y[,2]
   x_2 <- y[,3]
-  x_0*log(x_0/(x_0 + x_1 + x_2)) +
-    x_1*log(-x_0/(x_0 + x_1 + x_2) +
-              exp((1-r)*log(x_0/(x_0 + x_1 + x_2)))) +
-    x_2*log(1 - exp((1-r)*log(x_0/(x_0 + x_1 + x_2))))
+  n <-  x_0 + x_1 + x_2
+  x_0*log(x_0/n) +
+    ifelse(x_1 == 0, yes = 0, no = x_1*log(-x_0/n + exp((1-r)*log(x_0/n)))) +
+    ifelse(x_2 == 0, yes = 0, no = x_2*log(1 - exp((1-r)*log(x_0/n))))
 }
 attributes(loglik_trinom_prof) <- list("overdispersion"=function(ydata, weights, r_fitted_values, l_fitted_values=NULL){
   n <- apply(ydata, 1, sum)
