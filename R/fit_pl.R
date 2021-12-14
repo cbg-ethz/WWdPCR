@@ -151,5 +151,32 @@ logist_confint.plt_fit <- function(x, newdata = NULL, level = 0.95){
 
 }
 
+#' @method logist_predint pl_fit
+#' @rdname fit_pl
+#' @param x an object of class \code{pl_fit}
+#' @param newdata an optional vector of observed independent variables with which to predict
+#' @param level confidence level 1-\alpha for prediction
+#' @export
+logist_predint.plt_fit <- function(x, newdata = NULL, level = 0.95, likelihood=loglik_binom_n){
+  predicted <-  predict(x, scale="logit", se=TRUE)
 
+  if(is.null(dim(x$ydata))){ #hack to select binom other trinom
+    se <- sqrt(weighted.var(logit((x$ydata * x$weights +1) / (x$weights+2)) - logit(x$fitted), x$weights) + predicted$se^2)
+  }else{
+    se <- sqrt(weighted.var(logit(with(x$ydata+1, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2)))) - logit(c(x$fitted)), rowSums(x$ydata)) + predicted$se^2)
+  }
+
+  return(
+    list("lower" = logit_inv(predicted$pred - qnorm(1-(1-level)/2)*se),
+         "upper" = logit_inv(predicted$pred + qnorm(1-(1-level)/2)*se))
+  )
+
+}
+
+weighted.var <- function(x, w){
+  sum((x - weighted.mean(x, w))^2 * w) / sum(w)
+}
+
+
+#####
 

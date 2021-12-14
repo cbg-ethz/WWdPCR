@@ -390,6 +390,7 @@ ggplot() +
 
 ```
 
+
 ## By mutations
 
 ### HV69-70del
@@ -430,13 +431,15 @@ plt1 <- ggplot() +
   scale_colour_manual(
   values = c("steelblue", "red2", "orange"),
   breaks = c("dPCR HV69-70del", "clinical HV69-70del", "clinical B.1.1.7"),
-  labels = c("wastewater HV69-70del", "clinical HV69-70del", "clinical B.1.1.7")
+  labels = c("Wastewater (spike \u039469-70)", "Clinical (spike \u039469-70)", "clinical B.1.1.7")
   ) + 
   scale_fill_manual(
   values = c("steelblue", "red2", "orange"),
   breaks = c("dPCR HV69-70del", "clinical HV69-70del", "clinical B.1.1.7"),
-  labels = c("wastewater HV69-70del", "clinical HV69-70del", "clinical B.1.1.7")
+  labels = c("wastewater HV69-70del", "Clinical (spike \u039469-70)", "clinical B.1.1.7")
   ) 
+
+
 
 
 dPCR_HV6970del_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
@@ -445,8 +448,6 @@ dPCR_HV6970del_agg <- dPCR_HV6970del_agg[,c("x0", "x1", "x2", "date", "dayssince
 dPCR_HV6970del_agg$frac <- log((dPCR_HV6970del_agg[,1])/apply(dPCR_HV6970del_agg[,1:2], 1, sum)) /
   log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum))
 dPCR_HV6970del_agg$concentration <- -log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_HV6970del_agg$Dilutionfactor
-  
-
 
 plt2 <- ggplot() + 
   geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
@@ -543,7 +544,7 @@ plt1 <- ggplot() +
   scale_colour_manual(
   values = c("steelblue", "red2", "orange"),
   breaks = c("dPCR ORF1a del", "clinical ORF1a del", "clinical B.1.1.7"),
-  labels = c("wastewater ORF1a del", "clinical ORF1a del", "clinical B.1.1.7")
+  labels = c("Wastewater (ORF1a \u03943675-3677)", "Clinical (ORF1a \u03943675-3677)", "clinical B.1.1.7")
   ) + 
   scale_fill_manual(
   values = c("steelblue", "red2", "orange"),
@@ -623,6 +624,10 @@ plt_orf
 pdf("fitplot_CH.pdf", height = 10, width = 12.5)
 cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
 dev.off()
+
+png("fitplot_CH.png", height = 10, width = 12.5, units="in", res=1000)
+cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
 ```
 
 ## Plot for supplementary
@@ -667,7 +672,7 @@ plt1 <- ggplot() +
   scale_colour_manual(
   values = c("steelblue", "red2", "orange"),
   breaks = c("dPCR HV69-70del", "clinical HV69-70del", "clinical B.1.1.7"),
-  labels = c("wastewater HV69-70del", "clinical HV69-70del", "clinical B.1.1.7")
+  labels = c("Wastewater (spike \u039469-70)", "Clinical (spike \u039469-70)", "clinical B.1.1.7")
   ) + 
   scale_fill_manual(
   values = c("steelblue", "red2", "orange"),
@@ -757,15 +762,15 @@ plt1 <- ggplot() +
                   ymin=logist_confint.plt_fit(clinical_models$Zurich$ORF1adel$fit_3pl)$lower,
                   ymax=logist_confint.plt_fit(clinical_models$Zurich$ORF1adel$fit_3pl)$upper, fill="clinical ORF1a del"), alpha=0.2)  +
   
-    geom_point(aes(x=clinical_models$Zurich$ORF1adel$fit_2pl$xdata + as.Date("2020-12-07"),
-                y=clinical_models$Zurich$ORF1adel$fit_2pl$ydata,
+    geom_point(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$B117$fit_2pl$ydata,
                 color="clinical B.1.1.7")) +
-  geom_line(aes(x=clinical_models$Zurich$ORF1adel$fit_2pl$xdata + as.Date("2020-12-07"),
-                y=clinical_models$Zurich$ORF1adel$fit_2pl$fitted,
+  geom_line(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$B117$fit_2pl$fitted,
                 color="clinical B.1.1.7")) + 
-  geom_ribbon(aes(x=clinical_models$Zurich$ORF1adel$fit_2pl$xdata + as.Date("2020-12-07"),
-                  ymin=logist_confint.plt_fit(clinical_models$Zurich$ORF1adel$fit_2pl)$lower,
-                  ymax=logist_confint.plt_fit(clinical_models$Zurich$ORF1adel$fit_2pl)$upper, fill="clinical B.1.1.7"), alpha=0.2) + 
+  geom_ribbon(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                  ymin=logist_confint.plt_fit(clinical_models$Zurich$B117$fit_2pl)$lower,
+                  ymax=logist_confint.plt_fit(clinical_models$Zurich$B117$fit_2pl)$upper, fill="clinical B.1.1.7"), alpha=0.2) + 
   
   geom_point(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_empirical_freqs, color="dPCR ORF1a del"),
              alpha = points_alpha) +
@@ -779,7 +784,7 @@ plt1 <- ggplot() +
   scale_colour_manual(
   values = c("steelblue", "red2", "orange"),
   breaks = c("dPCR ORF1a del", "clinical ORF1a del", "clinical B.1.1.7"),
-  labels = c("wastewater ORF1a del", "clinical ORF1a del", "clinical B.1.1.7")
+  labels = c("Wastewater (ORF1a \u03943675-3677)", "Clinical (ORF1a \u03943675-3677)", "clinical B.1.1.7")
   ) + 
   scale_fill_manual(
   values = c("steelblue", "red2", "orange"),
@@ -858,6 +863,11 @@ plt_orf <- ggpubr::ggarrange(plt1 + xlab(""),
 
 ```{r}
 pdf("fitplot_ZH.pdf", height = 10, width = 12.5)
+cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
+
+
+png("fitplot_ZH.png", height = 10, width = 12.5, units="in", res=1000)
 cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
 dev.off()
 ```
@@ -1102,5 +1112,574 @@ ggpubr::ggarrange(
   align = "v", 
   labels=LETTERS[1:8])
 dev.off()
+```
+
+
+## By mutations, prediction intervals
+
+### HV69-70del
+
+```{r, fig.dim=c(7, 5)}
+update_geom_defaults("point", list(size = 0.8))
+points_alpha <- 0.8
+
+plt1 <- ggplot() + 
+  geom_point(aes(x=as.Date(clinical_HV6970del$date), y=clinical_HV6970del$HV69.70del/clinical_HV6970del$sequenced,
+                 color="clinical HV69-70del"),
+             alpha = points_alpha) + 
+  geom_line(aes(x=as.Date(clinical_HV6970del$date), y=clinical_HV6970del_3PL$fitted, color="clinical HV69-70del")) + 
+  geom_ribbon(aes(x=as.Date(clinical_HV6970del$date),
+                  ymin=logist_predint.plt_fit(clinical_HV6970del_3PL)$lower,
+                  ymax=logist_predint.plt_fit(clinical_HV6970del_3PL)$upper, fill="clinical HV69-70del"), alpha=0.2) + 
+  
+  geom_point(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Switzerland$B117$fit_2pl$ydata,
+                color="clinical B.1.1.7")) +
+  geom_line(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Switzerland$B117$fit_2pl$fitted,
+                color="clinical B.1.1.7")) + 
+  geom_ribbon(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                  ymin=logist_predint.plt_fit(clinical_models$Switzerland$B117$fit_2pl)$lower,
+                  ymax=logist_predint.plt_fit(clinical_models$Switzerland$B117$fit_2pl)$upper, fill="clinical B.1.1.7"), alpha=0.2) + 
+  
+  geom_point(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_empirical_freqs, color="dPCR HV69-70del"),
+             alpha = points_alpha) +
+  geom_line(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_3PL$fitted, color="dPCR HV69-70del")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_HV6970del$date),
+                  ymin=logist_predint.plt_fit(dPCR_HV6970del_3PL)$lower,
+                  ymax=logist_predint.plt_fit(dPCR_HV6970del_3PL)$upper, fill="dPCR HV69-70del"), alpha=0.2) + 
+  
+  xlab("date") + ylab("deletion frequency") + guides(fill=FALSE, colour=guide_legend(title="")) +
+  theme_light() + 
+  theme(legend.position="top") + 
+  scale_colour_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR HV69-70del", "clinical HV69-70del", "clinical B.1.1.7"),
+  labels = c("Wastewater (spike \u039469-70)", "Clinical (spike \u039469-70)", "clinical B.1.1.7")
+  ) + 
+  scale_fill_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR HV69-70del", "clinical HV69-70del", "clinical B.1.1.7"),
+  labels = c("wastewater HV69-70del", "Clinical (spike \u039469-70)", "clinical B.1.1.7")
+  ) 
+
+
+
+
+dPCR_HV6970del_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_HV6970del, FUN=sum)
+dPCR_HV6970del_agg <- dPCR_HV6970del_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_HV6970del_agg$frac <- log((dPCR_HV6970del_agg[,1])/apply(dPCR_HV6970del_agg[,1:2], 1, sum)) /
+  log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum))
+dPCR_HV6970del_agg$concentration <- -log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_HV6970del_agg$Dilutionfactor
+
+plt2 <- ggplot() + 
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration,
+               fill="SARS-CoV-2"),
+           stat="identity") + 
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration * dPCR_HV6970del_agg$frac,
+               fill="dPCR HV6970 del"),
+           stat="identity") + 
+    xlab("date") + ylab("gc/ml") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("steelblue", "grey"),
+  breaks = c("dPCR HV6970 del", "SARS-CoV-2"),
+  labels = c("four", "six"))
+
+plt3 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Switzerland$HV6970del$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$HV6970del$fit_3pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Switzerland$HV6970del$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$HV6970del$fit_3pl$weights * clinical_models$Switzerland$HV6970del$fit_3pl$ydata,
+               fill="clinical HV6970 del"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("red2", "grey"),
+  breaks = c("clinical HV6970 del", "n"),
+  labels = c("four", "six"))
+
+plt4 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$B117$fit_2pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$B117$fit_2pl$weights * clinical_models$Switzerland$B117$fit_2pl$ydata,
+               fill="clinical B117"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("orange", "grey"),
+  breaks = c("clinical B117", "n"),
+  labels = c("four", "six")) +
+  theme(legend.position = "none")
+
+plt_HV <- ggpubr::ggarrange(plt1 + xlab(""),
+                             plt2 + xlab(""),
+                             plt3 + xlab(""),
+                             plt4, heights = c(2.5,1,1,1),
+                    ncol = 1, align = "v", labels = c("A","C","E","G"))
+plt_HV
+
+```
+
+### ORF1a del
+
+```{r, fig.dim=c(7, 5)}
+points_alpha <- 0.8
+
+plt1 <- ggplot() + 
+  geom_point(aes(x=as.Date(clinical_ORF1adel$date), y=clinical_ORF1adel$ORF1adel/clinical_ORF1adel$sequenced,
+                 color="clinical ORF1a del"),
+             alpha = points_alpha) + 
+  geom_line(aes(x=as.Date(clinical_ORF1adel$date), y=clinical_ORF1a_3PL$fitted, color="clinical ORF1a del")) + 
+  geom_ribbon(aes(x=as.Date(clinical_ORF1adel$date),
+                  ymin=logist_predint.plt_fit(clinical_ORF1a_3PL)$lower,
+                  ymax=logist_predint.plt_fit(clinical_ORF1a_3PL)$upper, fill="clinical ORF1a del"), alpha=0.2) + 
+  xlab("date") + ylab("deletion frequency") + guides(fill=FALSE, colour=guide_legend(title="")) +
+  
+    geom_point(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Switzerland$B117$fit_2pl$ydata,
+                color="clinical B.1.1.7")) +
+  geom_line(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Switzerland$B117$fit_2pl$fitted,
+                color="clinical B.1.1.7")) + 
+  geom_ribbon(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                  ymin=logist_predint.plt_fit(clinical_models$Switzerland$B117$fit_2p)$lower,
+                  ymax=logist_predint.plt_fit(clinical_models$Switzerland$B117$fit_2p)$upper, fill="clinical B.1.1.7"), alpha=0.2) + 
+  
+  geom_point(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_empirical_freqs, color="dPCR ORF1a del"),
+             alpha = points_alpha) +
+  geom_line(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_3PL$fitted, color="dPCR ORF1a del")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_Orf1adel$date),
+                  ymin=logist_predint.plt_fit(dPCR_Orf1a_3PL)$lower,
+                  ymax=logist_predint.plt_fit(dPCR_Orf1a_3PL)$upper, fill="dPCR ORF1a del"), alpha=0.2) + 
+
+  theme_light() + 
+  theme(legend.position="top") + 
+  scale_colour_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR ORF1a del", "clinical ORF1a del", "clinical B.1.1.7"),
+  labels = c("Wastewater (ORF1a \u03943675-3677)", "Clinical (ORF1a \u03943675-3677)", "clinical B.1.1.7")
+  ) + 
+  scale_fill_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR ORF1a del", "clinical ORF1a del", "clinical B.1.1.7"),
+  labels = c("wastewater ORF1a del", "clinical ORF1a del", "clinical B.1.1.7")
+  )
+
+dPCR_Orf1adel_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_Orf1adel, FUN=sum)
+dPCR_Orf1adel_agg <- dPCR_Orf1adel_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_Orf1adel_agg$frac <- log((dPCR_Orf1adel_agg[,1])/apply(dPCR_Orf1adel_agg[,1:2], 1, sum)) /
+  log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum))
+dPCR_Orf1adel_agg$concentration <- -log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_Orf1adel_agg$Dilutionfactor
+  
+plt2 <- ggplot() + 
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration,
+               # fill="SARS-CoV-2"
+               ),
+           stat="identity",
+           fill="grey") + 
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration * dPCR_Orf1adel_agg$frac,
+               fill="dPCR ORF1a del"),
+           stat="identity") + 
+    xlab("date") + ylab("gc/ml") + guides(fill=FALSE) +
+  theme_classic() +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("steelblue", "grey"),
+  breaks = c("dPCR ORF1a del", "SARS-CoV-2"),
+  labels = c("four", "six"))
+
+plt3 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Switzerland$ORF1adel$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$ORF1adel$fit_3pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Switzerland$ORF1adel$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$ORF1adel$fit_3pl$weights * clinical_models$Switzerland$ORF1adel$fit_3pl$ydata,
+               fill="clinical Orf1a del"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("red2", "grey"),
+  breaks = c("clinical Orf1a del", "n"),
+  labels = c("four", "six"))
+
+plt4 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$B117$fit_2pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Switzerland$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Switzerland$B117$fit_2pl$weights * clinical_models$Switzerland$B117$fit_2pl$ydata,
+               fill="clinical B117"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("orange", "grey"),
+  breaks = c("clinical B117", "n"),
+  labels = c("four", "six")) +
+  theme(legend.position = "none")
+
+plt_orf <- ggpubr::ggarrange(plt1 + xlab(""),
+                             plt2 + xlab(""),
+                             plt3 + xlab(""),
+                             plt4, heights = c(2.5,1,1,1),
+                    ncol = 1, align = "v", labels=c("B", "D", "F", "H"))
+plt_orf
+
+```
+
+```{r}
+pdf("fitplot_CH_pred.pdf", height = 10, width = 12.5)
+cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
+
+png("fitplot_CH_pred.png", height = 10, width = 12.5, units="in", res=1000)
+cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
+```
+
+## Plot for supplementary, prediction intervals
+
+### HV69-70del
+
+```{r, fig.dim=c(7, 5)}
+update_geom_defaults("point", list(size = 0.8))
+points_alpha <- 0.8
+
+plt1 <- ggplot() + 
+  geom_point(aes(x=clinical_models$Zurich$HV6970del$fit_3pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$HV6970del$fit_3pl$ydata,
+                color="clinical HV69-70del")) +
+  geom_line(aes(x=clinical_models$Zurich$HV6970del$fit_3pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$HV6970del$fit_3pl$fitted,
+                color="clinical HV69-70del")) + 
+  geom_ribbon(aes(x=clinical_models$Zurich$HV6970del$fit_3pl$xdata + as.Date("2020-12-07"),
+                  ymin=logist_predint.plt_fit(clinical_models$Zurich$HV6970del$fit_3pl)$lower,
+                  ymax=logist_predint.plt_fit(clinical_models$Zurich$HV6970del$fit_3pl)$upper, fill="clinical HV69-70del"), alpha=0.2)  + 
+  
+  geom_point(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$B117$fit_2pl$ydata,
+                color="clinical B.1.1.7")) +
+  geom_line(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$B117$fit_2pl$fitted,
+                color="clinical B.1.1.7")) + 
+  geom_ribbon(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                  ymin=logist_predint.plt_fit(clinical_models$Zurich$B117$fit_2pl)$lower,
+                  ymax=logist_predint.plt_fit(clinical_models$Zurich$B117$fit_2pl)$upper, fill="clinical B.1.1.7"), alpha=0.2) + 
+  
+  geom_point(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_empirical_freqs, color="dPCR HV69-70del"),
+             alpha = points_alpha) +
+  geom_line(aes(x=as.Date(dPCR_HV6970del$date), y=dPCR_HV6970del_3PL$fitted, color="dPCR HV69-70del")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_HV6970del$date),
+                  ymin=logist_predint.plt_fit(dPCR_HV6970del_3PL)$lower,
+                  ymax=logist_predint.plt_fit(dPCR_HV6970del_3PL)$upper, fill="dPCR HV69-70del"), alpha=0.2) + 
+  
+  xlab("date") + ylab("deletion frequency") + guides(fill=FALSE, colour=guide_legend(title="")) +
+  theme_light() + 
+  theme(legend.position="top") + 
+  scale_colour_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR HV69-70del", "clinical HV69-70del", "clinical B.1.1.7"),
+  labels = c("Wastewater (spike \u039469-70)", "Clinical (spike \u039469-70)", "clinical B.1.1.7")
+  ) + 
+  scale_fill_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR HV69-70del", "clinical HV69-70del", "clinical B.1.1.7"),
+  labels = c("wastewater HV69-70del", "clinical HV69-70del", "clinical B.1.1.7")
+  ) 
+
+dPCR_HV6970del_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_HV6970del, FUN=sum)
+dPCR_HV6970del_agg <- dPCR_HV6970del_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_HV6970del_agg$frac <- log((dPCR_HV6970del_agg[,1])/apply(dPCR_HV6970del_agg[,1:2], 1, sum)) /
+  log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum))
+dPCR_HV6970del_agg$concentration <- -log(dPCR_HV6970del_agg[,1]/apply(dPCR_HV6970del_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_HV6970del_agg$Dilutionfactor
+  
+
+
+plt2 <- ggplot() + 
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration,
+               fill="SARS-CoV-2"),
+           stat="identity") + 
+  geom_bar(aes(x=as.Date(dPCR_HV6970del_agg$date),
+               y=dPCR_HV6970del_agg$concentration * dPCR_HV6970del_agg$frac,
+               fill="dPCR HV6970 del"),
+           stat="identity") + 
+    xlab("date") + ylab("gc/ml") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("steelblue", "grey"),
+  breaks = c("dPCR HV6970 del", "SARS-CoV-2"),
+  labels = c("four", "six"))
+
+plt3 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Zurich$HV6970del$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$HV6970del$fit_3pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Zurich$HV6970del$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$HV6970del$fit_3pl$weights * clinical_models$Zurich$HV6970del$fit_3pl$ydata,
+               fill="clinical HV6970 del"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("red2", "grey"),
+  breaks = c("clinical HV6970 del", "n"),
+  labels = c("four", "six"))
+
+plt4 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$B117$fit_2pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$B117$fit_2pl$weights * clinical_models$Zurich$B117$fit_2pl$ydata,
+               fill="clinical B117"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("orange", "grey"),
+  breaks = c("clinical B117", "n"),
+  labels = c("four", "six")) +
+  theme(legend.position = "none")
+
+plt_HV <- ggpubr::ggarrange(plt1 + xlab(""),
+                             plt2 + xlab(""),
+                             plt3 + xlab(""),
+                             plt4, heights = c(2.5,1,1,1),
+                    ncol = 1, align = "v", labels = c("A","C","E","G"))
+
+```
+
+### ORF1a del
+
+```{r, fig.dim=c(7, 5)}
+points_alpha <- 0.8
+
+plt1 <- ggplot() + 
+  geom_point(aes(x=clinical_models$Zurich$ORF1adel$fit_3pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$ORF1adel$fit_3pl$ydata,
+                color="clinical ORF1a del")) +
+  geom_line(aes(x=clinical_models$Zurich$ORF1adel$fit_3pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$ORF1adel$fit_3pl$fitted,
+                color="clinical ORF1a del")) + 
+  geom_ribbon(aes(x=clinical_models$Zurich$ORF1adel$fit_3pl$xdata + as.Date("2020-12-07"),
+                  ymin=logist_predint.plt_fit(clinical_models$Zurich$ORF1adel$fit_3pl)$lower,
+                  ymax=logist_predint.plt_fit(clinical_models$Zurich$ORF1adel$fit_3pl)$upper, fill="clinical ORF1a del"), alpha=0.2)  +
+  
+    geom_point(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$B117$fit_2pl$ydata,
+                color="clinical B.1.1.7")) +
+  geom_line(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                y=clinical_models$Zurich$B117$fit_2pl$fitted,
+                color="clinical B.1.1.7")) + 
+  geom_ribbon(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+                  ymin=logist_predint.plt_fit(clinical_models$Zurich$B117$fit_2pl)$lower,
+                  ymax=logist_predint.plt_fit(clinical_models$Zurich$B117$fit_2pl)$upper, fill="clinical B.1.1.7"), alpha=0.2) + 
+  
+  geom_point(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_empirical_freqs, color="dPCR ORF1a del"),
+             alpha = points_alpha) +
+  geom_line(aes(x=as.Date(dPCR_Orf1adel$date), y=dPCR_Orf1a_3PL$fitted, color="dPCR ORF1a del")) + 
+  geom_ribbon(aes(x=as.Date(dPCR_Orf1adel$date),
+                  ymin=logist_predint.plt_fit(dPCR_Orf1a_3PL)$lower,
+                  ymax=logist_predint.plt_fit(dPCR_Orf1a_3PL)$upper, fill="dPCR ORF1a del"), alpha=0.2) + 
+  xlab("date") + ylab("deletion frequency") + guides(fill=FALSE, colour=guide_legend(title="")) +
+  theme_light() + 
+  theme(legend.position="top") + 
+  scale_colour_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR ORF1a del", "clinical ORF1a del", "clinical B.1.1.7"),
+  labels = c("Wastewater (ORF1a \u03943675-3677)", "Clinical (ORF1a \u03943675-3677)", "clinical B.1.1.7")
+  ) + 
+  scale_fill_manual(
+  values = c("steelblue", "red2", "orange"),
+  breaks = c("dPCR ORF1a del", "clinical ORF1a del", "clinical B.1.1.7"),
+  labels = c("wastewater ORF1a del", "clinical ORF1a del", "clinical B.1.1.7")
+  )
+
+dPCR_Orf1adel_agg <- aggregate(cbind(x0, x1, x2) ~ date + dayssince +Dilutionfactor,
+                               data=dPCR_Orf1adel, FUN=sum)
+dPCR_Orf1adel_agg <- dPCR_Orf1adel_agg[,c("x0", "x1", "x2", "date", "dayssince", "Dilutionfactor")]
+dPCR_Orf1adel_agg$frac <- log((dPCR_Orf1adel_agg[,1])/apply(dPCR_Orf1adel_agg[,1:2], 1, sum)) /
+  log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum))
+dPCR_Orf1adel_agg$concentration <- -log(dPCR_Orf1adel_agg[,1]/apply(dPCR_Orf1adel_agg[,1:3], 1, sum)) / 0.0005477004196028817 * 8 * dPCR_Orf1adel_agg$Dilutionfactor
+  
+plt2 <- ggplot() + 
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration,
+               # fill="SARS-CoV-2"
+               ),
+           stat="identity",
+           fill="grey") + 
+  geom_bar(aes(x=as.Date(dPCR_Orf1adel_agg$date),
+               y=dPCR_Orf1adel_agg$concentration * dPCR_Orf1adel_agg$frac,
+               fill="dPCR ORF1a del"),
+           stat="identity") + 
+    xlab("date") + ylab("gc/ml") + guides(fill=FALSE) +
+  theme_classic() +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("steelblue", "grey"),
+  breaks = c("dPCR ORF1a del", "SARS-CoV-2"),
+  labels = c("four", "six"))
+
+plt3 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Zurich$ORF1adel$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$ORF1adel$fit_3pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Zurich$ORF1adel$fit_3pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$ORF1adel$fit_3pl$weights * clinical_models$Zurich$ORF1adel$fit_3pl$ydata,
+               fill="clinical Orf1a del"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("red2", "grey"),
+  breaks = c("clinical Orf1a del", "n"),
+  labels = c("four", "six"))
+
+plt4 <- ggplot() + 
+  geom_bar(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$B117$fit_2pl$weights,
+               fill="n"),
+           stat="identity") + 
+  geom_bar(aes(x=clinical_models$Zurich$B117$fit_2pl$xdata + as.Date("2020-12-07"),
+               y=clinical_models$Zurich$B117$fit_2pl$weights * clinical_models$Zurich$B117$fit_2pl$ydata,
+               fill="clinical B117"),
+           stat="identity") + 
+    xlab("date") + ylab("samples") +
+  guides(fill=FALSE) +
+  theme_classic() + scale_fill_manual(
+  values = c("orange", "grey"),
+  breaks = c("clinical B117", "n"),
+  labels = c("four", "six")) +
+  theme(legend.position = "none")
+
+
+plt_orf <- ggpubr::ggarrange(plt1 + xlab(""),
+                             plt2 + xlab(""),
+                             plt3 + xlab(""),
+                             plt4, heights = c(2.5,1,1,1),
+                    ncol = 1, align = "v", labels=c("B", "D", "F", "H"))
+
+
+```
+
+```{r}
+pdf("fitplot_ZH_pred.pdf", height = 10, width = 12.5)
+cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
+
+
+png("fitplot_ZH_pred.png", height = 10, width = 12.5, units="in", res=1000)
+cowplot::plot_grid(plt_HV, plt_orf, ncol = 2)
+dev.off()
+```
+
+
+
+### Assess predictions
+
+```{r}
+
+pred_pit <- function(x, obs){
+  predicted <-  predict(x, scale="logit", se=TRUE)
+  # se <- sqrt(predicted$se^2 + x$infl_factor)
+  se <- predicted$se * sqrt(length(x$xdata) + 1)
+  pnorm(logit(obs), predicted$pred, se)
+}
+
+pred_qq <- function(x, obs){
+  predicted <-  predict(x, scale="logit", se=TRUE)
+  # se <- sqrt(predicted$se^2 + x$infl_factor)
+  se <- predicted$se * sqrt(length(x$xdata) + 1)
+  return(logit(obs) - predicted$pred)
+}
+
+
+dPCR_HV6970del_3PL_pit <- pred_pit(dPCR_HV6970del_3PL, with(dPCR_HV6970del_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+clinical_HV6970del_3PL_pit <- pred_pit(clinical_HV6970del_3PL, clinical_HV6970del_3PL$ydata)
+dPCR_Orf1a_3PL_pit <- pred_pit(dPCR_Orf1a_3PL, with(dPCR_Orf1a_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+clinical_ORF1a_3PL_pit <- pred_pit(clinical_ORF1a_3PL, clinical_ORF1a_3PL$ydata)
+clinical_ch_b117_pit <- pred_pit(clinical_models$Switzerland$B117$fit_2pl, clinical_models$Switzerland$B117$fit_2pl$ydata)
+
+
+par(mfrow=c(1,5))
+hist(dPCR_HV6970del_3PL_pit, breaks = 20)
+hist(clinical_HV6970del_3PL_pit, breaks = 20)
+hist(dPCR_Orf1a_3PL_pit, breaks = 20)
+hist(clinical_ORF1a_3PL_pit, breaks = 20)
+hist(clinical_ch_b117_pit, breaks = 20)
+
+minmaxnorm <- function(x){(x-min(x))/(max(x)-min(x))}
+
+par(mfrow=c(1,5))
+qq1 <- pred_qq(dPCR_HV6970del_3PL, with(dPCR_HV6970del_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+EnvStats::qqPlot(qq1[is.finite(qq1)],
+       cex=minmaxnorm(sqrt(rowSums(dPCR_HV6970del_3PL$ydata))) + 0.1, add.line = T)
+qq2 <- pred_qq(clinical_HV6970del_3PL, clinical_HV6970del_3PL$ydata)
+EnvStats::qqPlot(qq2[is.finite(qq2)],
+       cex=minmaxnorm(sqrt(clinical_HV6970del_3PL$weights)) + 0.1, add.line = T)
+qq3 <- pred_qq(dPCR_Orf1a_3PL, with(dPCR_Orf1a_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+EnvStats::qqPlot(qq3[is.finite(qq3)],
+       cex=minmaxnorm(sqrt(rowSums(dPCR_Orf1a_3PL$ydata))) + 0.1, add.line = T)
+qq4 <- pred_qq(clinical_ORF1a_3PL, clinical_ORF1a_3PL$ydata)
+EnvStats::qqPlot(qq4[is.finite(qq4)],
+       cex=minmaxnorm(sqrt(clinical_ORF1a_3PL$weights)) + 0.1, add.line = T)
+qq5 <- pred_qq(clinical_models$Switzerland$B117$fit_2pl, clinical_models$Switzerland$B117$fit_2pl$ydata)
+EnvStats::qqPlot(qq5[is.finite(qq5)],
+       cex=minmaxnorm(sqrt(clinical_models$Switzerland$B117$fit_2pl$weights)) + 0.1, add.line = T)
+
+##
+
+dPCR_HV6970del_3PL_pit <- pred_pit(dPCR_HV6970del_3PL, with(dPCR_HV6970del_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+clinical_HV6970del_3PL_pit <- pred_pit(clinical_models$Zurich$HV6970del$fit_3pl, clinical_models$Zurich$HV6970del$fit_3pl$ydata)
+dPCR_Orf1a_3PL_pit <- pred_pit(dPCR_Orf1a_3PL, with(dPCR_Orf1a_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+clinical_ORF1a_3PL_pit <- pred_pit(clinical_models$Zurich$ORF1adel$fit_3pl, clinical_models$Zurich$ORF1adel$fit_3pl$ydata)
+clinical_ch_b117_pit <- pred_pit(clinical_models$Zurich$B117$fit_2pl, clinical_models$Zurich$B117$fit_2pl$ydata)
+
+par(mfrow=c(1,5))
+hist(dPCR_HV6970del_3PL_pit, breaks = 20)
+hist(clinical_HV6970del_3PL_pit, breaks = 20)
+hist(dPCR_Orf1a_3PL_pit, breaks = 20)
+hist(clinical_ORF1a_3PL_pit, breaks = 20)
+hist(clinical_ch_b117_pit, breaks = 20)
+
+par(mfrow=c(1,5))
+qq1 <- pred_qq(dPCR_HV6970del_3PL, with(dPCR_HV6970del_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+EnvStats::qqPlot(qq1[is.finite(qq1)],
+                 cex=minmaxnorm(sqrt(rowSums(dPCR_HV6970del_3PL$ydata))) + 0.1, add.line = T)
+qq2 <- pred_qq(clinical_models$Zurich$HV6970del$fit_3pl, clinical_models$Zurich$HV6970del$fit_3pl$ydata)
+EnvStats::qqPlot(qq2[is.finite(qq2)],
+                 cex=minmaxnorm(sqrt(clinical_models$Zurich$HV6970del$fit_3pl$weights)) + 0.1, add.line = T)
+qq3 <- pred_qq(dPCR_Orf1a_3PL, with(dPCR_Orf1a_3PL$ydata, 1-log((x0+x1)/(x0+x1+x2))/log(x0/(x0+x1+x2))))
+EnvStats::qqPlot(qq3[is.finite(qq3)],
+                 cex=minmaxnorm(sqrt(rowSums(dPCR_Orf1a_3PL$ydata))) + 0.1, add.line = T)
+qq4 <- pred_qq(clinical_models$Zurich$ORF1adel$fit_3pl, clinical_models$Zurich$ORF1adel$fit_3pl$ydata)
+EnvStats::qqPlot(qq4[is.finite(qq4)],
+                 cex=minmaxnorm(sqrt(clinical_models$Zurich$ORF1adel$fit_3pl$weights)) + 0.1, add.line = T)
+qq5 <- pred_qq(clinical_models$Zurich$B117$fit_2pl, clinical_models$Zurich$B117$fit_2pl$ydata)
+EnvStats::qqPlot(qq5[is.finite(qq5)],
+                 cex=minmaxnorm(sqrt(clinical_models$Zurich$B117$fit_2pl$weights)) + 0.1, add.line = T)
 ```
 
