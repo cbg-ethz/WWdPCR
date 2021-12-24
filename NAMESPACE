@@ -1,6 +1,8 @@
 exportPattern("^[[:alpha:]]+")
 
 export("logist_confint")
+export("loglik_trinom_prof")
+
 
 S3method("coef", "pl_fit")
 #S3method("se", "pl_fit")

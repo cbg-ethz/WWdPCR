@@ -20,9 +20,11 @@ knitr::opts_chunk$set(
 library(WWdPCR)
 ```
 
+In this document, we compute a couple examples to show how assuming independent binomials for the counts of a drop-off duplex dPCR assay leads to aberrant confidence interval, and compare with using a proper multinomial likelihood.
+
 ## Comparison of likelihood surfaces and confidence regions
 
-We plot below the comparison between likelihood surfaces of the product-of-binomial model and the multinomial model, for a special case of $x_0 = 10000, x_1 = 10, x_2 = 100$. We show contours of the confidence regions for $\alpha=0.05, \alpha=0.01, \alpha=0.001$. 
+We plot below the comparison between likelihood surfaces of the product-of-binomial model and the multinomial model, for a special case of $x_0 = 10000, x_1 = 10, x_2 = 100$. We show contours of the confidence regions for $\alpha=0.05, \alpha=0.01, \alpha=0.001$. Notice that in the the product-of-binomial model, the contours exit the [0,1] range for the proportion of variant. 
 
 ```{r, fig.dim=c(6,6)}
 # log-likelihood based on multinomial distribution derived above

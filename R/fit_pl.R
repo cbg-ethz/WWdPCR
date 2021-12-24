@@ -158,6 +158,12 @@ logist_confint.plt_fit <- function(x, newdata = NULL, level = 0.95){
 #' @param level confidence level 1-\alpha for prediction
 #' @export
 logist_predint.plt_fit <- function(x, newdata = NULL, level = 0.95, likelihood=loglik_binom_n){
+
+  weighted.var <- function(x, w){
+    if(length(w) == 1){w=rep(w, length(x))}
+    sum((x - weighted.mean(x, w))^2 * w) / sum(w)
+  }
+
   predicted <-  predict(x, scale="logit", se=TRUE)
 
   if(is.null(dim(x$ydata))){ #hack to select binom other trinom
@@ -173,10 +179,10 @@ logist_predint.plt_fit <- function(x, newdata = NULL, level = 0.95, likelihood=l
 
 }
 
-weighted.var <- function(x, w){
-  sum((x - weighted.mean(x, w))^2 * w) / sum(w)
-}
+
 
 
 #####
+
+
 
