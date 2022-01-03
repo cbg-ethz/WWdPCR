@@ -11,8 +11,8 @@ A data frame with 4037 obs. of  6 variables.
   \item{date}{factor with 424 levels, representing the date of sampling}
   \item{HV6970del}{the count of sequences with the S-gene HV69-70 deletion}
   \item{ORF1adel}{the count of sequences with the ORF1a deletion}
-  \item{ORF1adel}{the count of sequences determined to be B.1.1.7 (Alpha)}
-  \item{ORF1adel}{the total count of sequences}
+  \item{B117}{the count of sequences determined to be B.1.1.7 (Alpha)}
+  \item{Tot}{the total count of sequences}
 }
 }
 \source{
