@@ -107,7 +107,7 @@ le <- function(x_0, x_1, x_2, r){
     x_2*log(1 - exp(r*log(x_0/(x_0 + x_1 + x_2))))
 }
 
-r_hat <- function(x_0, x_1, x_2){
+r_hat2 <- function(x_0, x_1, x_2){
     n <- x_0 + x_1 + x_2
     l1 <- -log((x_0+x_1)/n)
     l2 <- -log(x_0/n)
@@ -132,19 +132,19 @@ for(tt in list(list(x0=50, x1=10, x2=1),
     ll0 <- lp(x0, x1, x2, rr)
     ll1 <- le(x0, x1, x2, rr)
     ll2 <- loglik_ind(x0, x1, x2, rr, lam_ml)
-    mle <- r_hat(x0, x1, x2)
+    mle <- r_hat2(x0, x1, x2)
     mle_l1 <- loglik(x0, x1, x2, mle, lam_ml)
     mle_l2 <- loglik_ind(x0, x1, x2, mle, lam_ml)
 
-    lower_e <- uniroot(function(x){2*(le(x0,x1,x2,x) - le(x0,x1,x2,r_hat(x0, x1, x2))) + qchisq(0.95, 1)},
-                           c(0,r_hat(x0, x1, x2)))$root
-    upper_e <- uniroot(function(x){2*(le(x0,x1,x2,x) - le(x0,x1,x2,r_hat(x0, x1, x2))) + qchisq(0.95, 1)},
-                           c(r_hat(x0, x1, x2), 1))$root
+    lower_e <- uniroot(function(x){2*(le(x0,x1,x2,x) - le(x0,x1,x2,r_hat2(x0, x1, x2))) + qchisq(0.95, 1)},
+                           c(0,r_hat2(x0, x1, x2)))$root
+    upper_e <- uniroot(function(x){2*(le(x0,x1,x2,x) - le(x0,x1,x2,r_hat2(x0, x1, x2))) + qchisq(0.95, 1)},
+                           c(r_hat2(x0, x1, x2), 1))$root
     
-    lower_bin <- uniroot(function(x){2*(loglik_ind(x0,x1,x2,x,lam_ml) - loglik_ind(x0,x1,x2,r_hat(x0, x1, x2),lam_ml)) + qchisq(0.95, 1)},
-                           c(0,r_hat(x0, x1, x2)))$root
-    upper_bin <- uniroot(function(x){2*(loglik_ind(x0,x1,x2,x,lam_ml) - loglik_ind(x0,x1,x2,r_hat(x0, x1, x2),lam_ml)) + qchisq(0.95, 1)},
-                           c(r_hat(x0, x1, x2), 1.4))$root
+    lower_bin <- uniroot(function(x){2*(loglik_ind(x0,x1,x2,x,lam_ml) - loglik_ind(x0,x1,x2,r_hat2(x0, x1, x2),lam_ml)) + qchisq(0.95, 1)},
+                           c(0,r_hat2(x0, x1, x2)))$root
+    upper_bin <- uniroot(function(x){2*(loglik_ind(x0,x1,x2,x,lam_ml) - loglik_ind(x0,x1,x2,r_hat2(x0, x1, x2),lam_ml)) + qchisq(0.95, 1)},
+                           c(r_hat2(x0, x1, x2), 1.4))$root
 
     se2 <- se2_r_1(mle*lam_ml, lam_ml, x0+x1+x2, x0+x1+x2)
 
