@@ -1,3 +1,9 @@
+#' r_hat
+#'
+#' @param x vector or matrix of droplet counts
+#'
+#' @return MLE of the variant proportion in samples
+#' @export
 r_hat <- function(x){
   if(is.null(dim(x))){
     x_0 <- x[1]
@@ -37,44 +43,24 @@ upper_e <- function(x, level=0.95){
   }
 }
 
+#' lrt_confint
+#'
+#' @param x vector or matrix of droplet counts
+#' @param level 1-alpha confidence level
+#'
+#' @return data.frame of lower and upper confidence bounds
+#' @export
 lrt_confint <- function(x, level=0.95){
-  tmp_res <- apply(x, 1, function(i){
-    list(lower=lower_e(i, level = level), upper=upper_e(i, level = level))
-  })
-  Reduce(function(...) rbind.data.frame(...), tmp_res)
-}
-
-### tests for binomial data
-
-lower_e_binom <- function(x, level=0.95){
-  if(is.nan(x[1]/x[2])){
-    return(NaN)
-  }else if(x[1]/x[2] == 0){
-    return(0)
+  if(is.null(dim(x))){
+    as.data.frame(list(lower=lower_e(x, level = level), upper=upper_e(x, level = level)))
   }else{
-    uniroot(function(y){2*(dbinom(x[1], x[2],y, log=TRUE) - dbinom(x[1], x[2], x[1]/x[2])) + qchisq(level, 1)},
-            interval=c(0, x[1]/x[2]), f.upper = qchisq(level, 1))$root
+    tmp_res <- apply(x, 1, function(i){
+      list(lower=lower_e(i, level = level), upper=upper_e(i, level = level))
+    })
+    Reduce(function(...) rbind.data.frame(...), tmp_res)
   }
 }
 
-upper_e_binom <- function(x, level=0.95){
-  if (is.nan(x[1]/x[2])){
-    return(NaN)
-  }else if (x[1]/x[2] == 1){
-    return(1)
-  }else{
-    uniroot(function(y){2*(dbinom(x[1], x[2], y, log=TRUE) - dbinom(x[1], x[2], x[1]/x[2])) + qchisq(level, 1)},
-            interval=c(x[1]/x[2], 1), f.lower  = qchisq(level, 1))$root
-  }
-}
-
-lrt_confint_binom <- function(x, level=0.95, transformation=function(i) {-log(1-i)}){
-  tmp_res <- apply(x, 1, function(i){
-    list(lower=lower_e_binom(i, level = level), upper=upper_e_binom(i, level = level))
-  })
-  transformation(Reduce(function(...) rbind.data.frame(...), tmp_res))
-
-}
 
 
 

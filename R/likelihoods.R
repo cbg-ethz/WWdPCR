@@ -22,8 +22,6 @@ attributes(loglik_binom_n) <- list("overdispersion"=function(ydata, weights, fit
 #'
 #' @return log-likelihood kernel
 #' @export
-#'
-#' @examples
 loglik_trinom_prof <- function(y, r){
   if(is.null(dim(y))){
     x_0 <- y[1]
