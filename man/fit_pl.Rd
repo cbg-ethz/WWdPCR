@@ -7,8 +7,8 @@
 \alias{fitted.pl_fit}
 \alias{confint.pl_fit}
 \alias{predict.pl_fit}
-\alias{logist_confint.plt_fit}
-\alias{logist_predint.plt_fit}
+\alias{logist_confint.pl_fit}
+\alias{logist_predint.pl_fit}
 \title{fit_pl}
 \usage{
 fit_pl(
@@ -48,6 +48,8 @@ fit_pl(
 
 \item{likelihood}{likelihood function}
 
+\item{quasi}{compute overdispersion and use quasilikelihood model to build confidence intervals}
+
 \item{starting_values}{(named) vector of starting values for optimization}
 
 \item{lower}{vector of lower bounds for parameters}
@@ -56,7 +58,7 @@ fit_pl(
 
 \item{x}{an object of class \code{pl_fit}}
 
-\item{level}{confidence level 1-\alpha for prediction}
+\item{level}{confidence level 1-alpha for prediction}
 
 \item{newdata}{an optional vector of observed independent variables with which to predict}
 

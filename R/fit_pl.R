@@ -5,14 +5,14 @@
 #' @param weights weights vector (optional).
 #' @param fitfun fitting function
 #' @param likelihood likelihood function
+#' @param quasi compute overdispersion and use quasilikelihood model to build confidence intervals
 #' @param starting_values (named) vector of starting values for optimization
 #' @param lower vector of lower bounds for parameters
 #' @param upper vector of upper bounds for parameters
 #'
 #' @return pl_fit object
 #' @export
-#'
-#' @examples
+
 fit_pl <- function(ydata, xdata, weights=1, fitfun=pl3model, likelihood=loglik_binom_n,
                    quasi=F,
                    starting_values=c("a"=0.5, "b"=-10, "c"=0.2),
@@ -81,7 +81,7 @@ fitted.pl_fit <- function(x){
 #' @method confint pl_fit
 #' @rdname fit_pl
 #' @param x an object of class \code{pl_fit}
-#' @param level confidence level 1-\alpha
+#' @param level confidence level 1-alpha
 #' @export
 confint.pl_fit <- function(x, level=0.95){
   pars_est_df <- cbind(x$estimates,
@@ -130,8 +130,6 @@ predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRU
 #'
 #' @return list of confidence intervals
 #' @export
-#'
-#' @examples
 logist_confint <- function(x) {
   UseMethod("logist_confint")
 }
@@ -140,9 +138,9 @@ logist_confint <- function(x) {
 #' @rdname fit_pl
 #' @param x an object of class \code{pl_fit}
 #' @param newdata an optional vector of observed independent variables with which to predict
-#' @param level confidence level 1-\alpha
+#' @param level confidence level 1-alpha
 #' @export
-logist_confint.plt_fit <- function(x, newdata = NULL, level = 0.95){
+logist_confint.pl_fit <- function(x, newdata = NULL, level = 0.95){
   predicted <-  predict(x, scale="logit", se=TRUE)
   return(
     list("lower" = logit_inv(predicted$pred - qnorm(1-(1-level)/2)*predicted$se),
@@ -151,13 +149,24 @@ logist_confint.plt_fit <- function(x, newdata = NULL, level = 0.95){
 
 }
 
+#' logist_predint
+#'
+#' @param x an object of class \code{pl_fit}
+#'
+#' @return list of prediction intervals
+#' @export
+logist_predint <- function(x) {
+  UseMethod("logist_predint")
+}
+
+
 #' @method logist_predint pl_fit
 #' @rdname fit_pl
 #' @param x an object of class \code{pl_fit}
 #' @param newdata an optional vector of observed independent variables with which to predict
-#' @param level confidence level 1-\alpha for prediction
+#' @param level confidence level 1-alpha for prediction
 #' @export
-logist_predint.plt_fit <- function(x, newdata = NULL, level = 0.95, likelihood=loglik_binom_n){
+logist_predint.pl_fit <- function(x, newdata = NULL, level = 0.95, likelihood=loglik_binom_n){
 
   weighted.var <- function(x, w){
     if(length(w) == 1){w=rep(w, length(x))}
@@ -178,11 +187,3 @@ logist_predint.plt_fit <- function(x, newdata = NULL, level = 0.95, likelihood=l
   )
 
 }
-
-
-
-
-#####
-
-
-
