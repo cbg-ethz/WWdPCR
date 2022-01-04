@@ -23,19 +23,25 @@ fit_pl(
   upper = c(Inf, Inf, 1)
 )
 
-\method{coef}{pl_fit}(x)
+\method{coef}{pl_fit}(object, ...)
 
 \method{se}{pl_fit}(x)
 
-\method{fitted}{pl_fit}(x)
+\method{fitted}{pl_fit}(object, ...)
 
-\method{confint}{pl_fit}(x, level = 0.95)
+\method{confint}{pl_fit}(object, parm, level = 0.95, ...)
 
-\method{predict}{pl_fit}(x, newdata = NULL, scale = c("linear", "logit"), se = TRUE)
+\method{predict}{pl_fit}(object, newdata = NULL, scale = c("linear", "logit"), se = TRUE, ...)
 
-\method{logist_confint}{pl_fit}(x, newdata = NULL, level = 0.95)
+\method{logist_confint}{pl_fit}(x, newdata = NULL, level = 0.95, ...)
 
-\method{logist_predint}{pl_fit}(x, newdata = NULL, level = 0.95, likelihood = loglik_binom_n)
+\method{logist_predint}{pl_fit}(
+  x,
+  newdata = NULL,
+  level = 0.95,
+  likelihood = loglik_binom_n,
+  ...
+)
 }
 \arguments{
 \item{ydata}{response variable}
@@ -56,7 +62,15 @@ fit_pl(
 
 \item{upper}{vector of upper bounds for parameters}
 
+\item{object}{an object of class \code{pl_fit}}
+
+\item{...}{additional argument(s)}
+
 \item{x}{an object of class \code{pl_fit}}
+
+\item{parm}{a specification of which parameters are to be given confidence
+intervals, either a vector of numbers or a vector of names. If missing,
+all parameters are considered.}
 
 \item{level}{confidence level 1-alpha for prediction}
 

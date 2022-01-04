@@ -21,6 +21,12 @@ r_hat <- function(x){
 }
 
 
+#' lower_e
+#'
+#' @param x vector or matrix of droplet counts
+#' @param level 1-alpha confidence level
+#'
+#' @return lower confidence bounds
 lower_e <- function(x, level=0.95){
   if(is.nan(r_hat(x))){
     return(NaN)
@@ -32,6 +38,12 @@ lower_e <- function(x, level=0.95){
   }
 }
 
+#' upper_e
+#'
+#' @param x vector or matrix of droplet counts
+#' @param level 1-alpha confidence level
+#'
+#' @return upper confidence bounds
 upper_e <- function(x, level=0.95){
   if (is.nan(r_hat(x))){
     return(NaN)

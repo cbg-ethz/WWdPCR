@@ -4,10 +4,12 @@
 \alias{logist_confint}
 \title{logist_confint}
 \usage{
-logist_confint(x)
+logist_confint(x, ...)
 }
 \arguments{
 \item{x}{an object of class \code{pl_fit}}
+
+\item{...}{additional argument(s) for methods}
 }
 \value{
 list of confidence intervals

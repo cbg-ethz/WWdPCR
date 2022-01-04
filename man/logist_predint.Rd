@@ -4,10 +4,12 @@
 \alias{logist_predint}
 \title{logist_predint}
 \usage{
-logist_predint(x)
+logist_predint(x, ...)
 }
 \arguments{
 \item{x}{an object of class \code{pl_fit}}
+
+\item{...}{additional argument(s) for methods}
 }
 \value{
 list of prediction intervals

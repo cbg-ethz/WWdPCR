@@ -46,11 +46,25 @@ attributes(pl3model) <- list(
     )})
 
 
+#' logit
+#'
+#' @param r parameter to transform
+#'
+#' @return log(r/(1-r))
+#' @export
+logit <- function(r){
+  log(r/(1-r))
+}
 
-
-# functions to compute forward and backward reparametrizations
-logit <- function(r){log(r/(1-r))}
-logit_inv <- function(psi){1/(1+exp(-psi))}
+#' logit_inv
+#'
+#' @param psi parameter to transform
+#'
+#' @return 1/(1+exp(-psi))
+#' @export
+logit_inv <- function(psi){
+  1/(1+exp(-psi))
+}
 
 
 

@@ -9,6 +9,7 @@
 #' @param starting_values (named) vector of starting values for optimization
 #' @param lower vector of lower bounds for parameters
 #' @param upper vector of upper bounds for parameters
+#' @param ... additional argument(s)
 #'
 #' @return pl_fit object
 #' @export
@@ -55,10 +56,10 @@ fit_pl <- function(ydata, xdata, weights=1, fitfun=pl3model, likelihood=loglik_b
 
 #' @method coef pl_fit
 #' @rdname fit_pl
-#' @param x an object of class \code{pl_fit}
+#' @param object an object of class \code{pl_fit}
 #' @export
-coef.pl_fit <- function(x){
-  x$estimates
+coef.pl_fit <- function(object, ...){
+  object$estimates
 }
 
 #' @method se pl_fit
@@ -71,38 +72,49 @@ se.pl_fit <- function(x){
 
 #' @method fitted pl_fit
 #' @rdname fit_pl
-#' @param x an object of class \code{pl_fit}
+#' @param object an object of class \code{pl_fit}
 #' @export
-fitted.pl_fit <- function(x){
-  x$fitted
+fitted.pl_fit <- function(object, ...){
+  object$fitted
 }
 
 
 #' @method confint pl_fit
 #' @rdname fit_pl
-#' @param x an object of class \code{pl_fit}
+#' @param object an object of class \code{pl_fit}
+#' @param parm a specification of which parameters are to be given confidence
+#' intervals, either a vector of numbers or a vector of names. If missing,
+#' all parameters are considered.
 #' @param level confidence level 1-alpha
+#'
 #' @export
-confint.pl_fit <- function(x, level=0.95){
-  pars_est_df <- cbind(x$estimates,
-                       x$estimates - qnorm(1-(1-level)/2) * x$se,
-                       x$estimates + qnorm(1-(1-level)/2) * x$se)
+confint.pl_fit <- function(object, parm, level=0.95, ...){
+  pars_est_df <- cbind(object$estimates,
+                       object$estimates - qnorm(1-(1-level)/2) * object$se,
+                       object$estimates + qnorm(1-(1-level)/2) * object$se)
   colnames(pars_est_df) <- c("estimate", "lower", "upper")
-  pars_est_df
+  # if(!is.null(parm)){
+  #   pars_est_df[parm,]
+  if(!missing(parm)){
+    pars_est_df[parm,]
+  }else{
+    pars_est_df
+  }
 }
 
 #' @method predict pl_fit
 #' @rdname fit_pl
-#' @param x an object of class \code{pl_fit}
+#' @param object an object of class \code{pl_fit}
 #' @param newdata an optional vector of observed independent variables with which to predict
 #' @param scale scale on which to predict, either linear or logit scale
 #' @param se whether to return the standard errors of the predictions or not
+#'
 #' @export
-predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRUE){
+predict.pl_fit <- function(object, newdata = NULL, scale=c("linear", "logit"), se=TRUE, ...){
   if(is.null(newdata)){
-    newdata <- x$xdata
+    newdata <- object$xdata
   }
-  pred <- do.call(x$fitfun, c(list(newdata), as.list(x$estimates)))
+  pred <- do.call(object$fitfun, c(list(newdata), as.list(object$estimates)))
   if(scale=="logit"){
     pred=logit(pred)
   }
@@ -111,13 +123,13 @@ predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRU
   if(se==TRUE){
     # choose appropriate jacobian for delta method
     grad <- switch(scale,
-                   "linear"=attributes(x$fitfun)$grad,
-                   "logit"=attributes(x$fitfun)$logit_grad
+                   "linear"=attributes(object$fitfun)$grad,
+                   "logit"=attributes(object$fitfun)$logit_grad
                    )
     # compute standard errors of the fit
     stand.errors <- apply(as.matrix(newdata), 1, function(t){
-      grad_eval <- do.call(grad, c(list(t), as.list(x$estimates)))
-      sqrt(t(grad_eval) %*% (solve(-1*x$opt$hessian) * x$infl_factor) %*% grad_eval)
+      grad_eval <- do.call(grad, c(list(t), as.list(object$estimates)))
+      sqrt(t(grad_eval) %*% (solve(-1*object$opt$hessian) * object$infl_factor) %*% grad_eval)
     })
     out$se <- stand.errors
   }
@@ -127,10 +139,11 @@ predict.pl_fit <- function(x, newdata = NULL, scale=c("linear", "logit"), se=TRU
 #' logist_confint
 #'
 #' @param x an object of class \code{pl_fit}
+#' @param ... additional argument(s) for methods
 #'
 #' @return list of confidence intervals
 #' @export
-logist_confint <- function(x) {
+logist_confint <- function(x, ...) {
   UseMethod("logist_confint")
 }
 
@@ -140,7 +153,7 @@ logist_confint <- function(x) {
 #' @param newdata an optional vector of observed independent variables with which to predict
 #' @param level confidence level 1-alpha
 #' @export
-logist_confint.pl_fit <- function(x, newdata = NULL, level = 0.95){
+logist_confint.pl_fit <- function(x, newdata = NULL, level = 0.95, ...){
   predicted <-  predict(x, scale="logit", se=TRUE)
   return(
     list("lower" = logit_inv(predicted$pred - qnorm(1-(1-level)/2)*predicted$se),
@@ -152,11 +165,12 @@ logist_confint.pl_fit <- function(x, newdata = NULL, level = 0.95){
 #' logist_predint
 #'
 #' @param x an object of class \code{pl_fit}
+#' @param ... additional argument(s) for methods
 #'
 #' @return list of prediction intervals
 #' @export
-logist_predint <- function(x) {
-  UseMethod("logist_predint")
+logist_predint <- function(x, ...) {
+  UseMethod("logist_predint", ...)
 }
 
 
@@ -166,7 +180,7 @@ logist_predint <- function(x) {
 #' @param newdata an optional vector of observed independent variables with which to predict
 #' @param level confidence level 1-alpha for prediction
 #' @export
-logist_predint.pl_fit <- function(x, newdata = NULL, level = 0.95, likelihood=loglik_binom_n){
+logist_predint.pl_fit <- function(x, newdata = NULL, level = 0.95, likelihood=loglik_binom_n, ...){
 
   weighted.var <- function(x, w){
     if(length(w) == 1){w=rep(w, length(x))}
