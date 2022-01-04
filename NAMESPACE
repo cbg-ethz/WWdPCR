@@ -13,5 +13,7 @@ S3method("fitted", "pl_fit")
 S3method("confint", "pl_fit")
 S3method("predict", "pl_fit")
 S3method("logist_confint", "pl_fit")
-
 S3method("logist_predint", "pl_fit")
+
+importFrom("stats", "optim", "predict", "qchisq", "qnorm", "uniroot",
+             "weighted.mean")

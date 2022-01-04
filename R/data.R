@@ -39,5 +39,5 @@
 #'   \item{x1}{single positive droplets count}
 #'   \item{x2}{double positive droplets count}
 #' }
-#' @source \url{https://doi.org/10.25678/0005ET}
+#' @source \doi{10.25678/0005ET}
 "dPCRdat_HV6970"

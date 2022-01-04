@@ -17,7 +17,7 @@ A data frame with 64 obs. of  6 variables.
 }
 }
 \source{
-\url{https://doi.org/10.25678/0005ET}
+\doi{10.25678/0005ET}
 }
 \usage{
 dPCRdat_HV6970
