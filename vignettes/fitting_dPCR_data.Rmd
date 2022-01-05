@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-In this document, we show how the likelihood model for duplex dPCR assays derived in Caduff et al. 2021 [(doi.org/10.1101/2021.08.22.21262024)](doi.org/10.1101/2021.08.22.21262024) can be used to compute confidence intervals for individual measurements, as well as fitting logistic growth curves and inferring growth rates for time series data. The logistic growth here starts with a >0 background prevalence. 
+In this document, we show how the likelihood model for duplex dPCR assays derived in Caduff et al. 2021 [(https://doi.org/10.1101/2021.08.22.21262024)](https://doi.org/10.1101/2021.08.22.21262024) can be used to compute confidence intervals for individual measurements, as well as fitting logistic growth curves and inferring growth rates for time series data. The logistic growth here starts with a >0 background prevalence. 
 
 
 ```{r setup}
@@ -178,7 +178,7 @@ dPCR_HV6970del_2PL <- fit_pl(dPCRdat_HV6970[,c("x0", "x1", "x2")],
 knitr::kable(confint(dPCR_HV6970del_2PL))
 ```
 
-We can compare it to a fit on the number of clinical B.1.1.7 cases. The data from Swiss clinical sequencing is attached, and was obtained from [Cov-Spectrum](https://cov-spectrum.ethz.ch/).
+We can compare it to a fit on the number of clinical B.1.1.7 cases. The data from Swiss clinical sequencing is attached, and was obtained from [Cov-Spectrum](https://cov-spectrum.org/).
 
 ```{r}
 str(clinical_data)

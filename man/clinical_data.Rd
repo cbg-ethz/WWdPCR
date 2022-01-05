@@ -16,7 +16,7 @@ A data frame with 4037 obs. of  6 variables.
 }
 }
 \source{
-\url{cov-spectrum.ethz.ch}
+\url{https://cov-spectrum.org}
 }
 \usage{
 clinical_data

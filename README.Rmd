@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 WWdPCR is a package to analyse dPCR duplex assays. The main use cases are: computing confidence intervals for the variant proprotion in a dPCR duplex assay, fitting a logistic growth model to the variant proportion with time series duplex assay dPCR data (also including background prevalence) to estimate growth rates. The logistic growth functions (that include background prevalence) can also be applied to binomial data. 
 
-If you use WWdPCR, please cite Caduff et al. 2021 [(doi.org/10.1101/2021.08.22.21262024)](doi.org/10.1101/2021.08.22.21262024).
+If you use WWdPCR, please cite Caduff et al. 2021 [(https://doi.org/10.1101/2021.08.22.21262024)](https://doi.org/10.1101/2021.08.22.21262024).
 
 ## Installation
 

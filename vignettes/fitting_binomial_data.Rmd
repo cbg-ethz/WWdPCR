@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-In this document, we show how following Caduff et al. 2021 [(doi.org/10.1101/2021.08.22.21262024)](doi.org/10.1101/2021.08.22.21262024) we can use this package to compute logistic growth rate on binomial time series data, as well as in the presence of background prevalence.
+In this document, we show how following Caduff et al. 2021 [(https://doi.org/10.1101/2021.08.22.21262024)](https://doi.org/10.1101/2021.08.22.21262024) we can use this package to compute logistic growth rate on binomial time series data, as well as in the presence of background prevalence.
 
 ```{r setup}
 library(WWdPCR)

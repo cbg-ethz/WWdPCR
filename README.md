@@ -15,7 +15,7 @@ prevalence) to estimate growth rates. The logistic growth functions
 data.
 
 If you use WWdPCR, please cite Caduff et al. 2021
-[(doi.org/10.1101/2021.08.22.21262024)](doi.org/10.1101/2021.08.22.21262024).
+[(https://doi.org/10.1101/2021.08.22.21262024)](https://doi.org/10.1101/2021.08.22.21262024).
 
 ## Installation
 

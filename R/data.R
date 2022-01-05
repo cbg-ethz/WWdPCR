@@ -16,7 +16,7 @@
 #'   \item{B117}{the count of sequences determined to be B.1.1.7 (Alpha)}
 #'   \item{Tot}{the total count of sequences}
 #' }
-#' @source \url{cov-spectrum.ethz.ch}
+#' @source \url{https://cov-spectrum.org}
 "clinical_data"
 
 
@@ -39,5 +39,5 @@
 #'   \item{x1}{single positive droplets count}
 #'   \item{x2}{double positive droplets count}
 #' }
-#' @source \doi{10.25678/0005ET}
+#' @source \doi{10.1101/2021.08.22.21262024}
 "dPCRdat_HV6970"
