@@ -1,5 +1,5 @@
-Fixed the URLs and DOIs since the last submission (thanks you!).
+Again, fixed the last URLs.
 
-R-hub checks now all pass without notes (except from spellcheck that trips on acronyms), on all different servers.
+R-hub checks pass without notes (except from spellcheck that trips on acronyms), on all different servers.
 
-Have a nice day.
+Thanks for your patience and have a nice day.
