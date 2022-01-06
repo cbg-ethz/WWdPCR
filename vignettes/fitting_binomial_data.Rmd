@@ -125,7 +125,7 @@ print(c("2logLr:"=llr, "p-val:"=formatC(1-pchisq(llr, 1), format = "e", digits =
 
 ## Load and prepare data
 
-We have daily prevalence in the Swiss clinical sequencing of the HV69-70 deletion, ORF1a deletion associated with B.1.1.7, as well as the fraction of B.1.1.7. They were downloaded from [Cov-Spectrum](https://cov-spectrum.ethz.ch/):
+We have daily prevalence in the Swiss clinical sequencing of the HV69-70 deletion, ORF1a deletion associated with B.1.1.7, as well as the fraction of B.1.1.7. They were downloaded from [Cov-Spectrum](https://cov-spectrum.org/):
 
 ```{r}
 str(clinical_data)

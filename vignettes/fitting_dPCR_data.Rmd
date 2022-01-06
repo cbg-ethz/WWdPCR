@@ -144,7 +144,7 @@ legend("topleft", legend=c("true", "3PL fit", "empirical"),
 
 ## Load data
 
-We will use wastewater RT-ddPCR data from Caduff et. al. [(doi.org/10.1101/2021.08.22.21262024)](doi.org/10.1101/2021.08.22.21262024). The assay targets SARS-CoV-2 S-gene HV69-70 deletion, a signature of the B.1.1.7 (Alpha) variant. However, the deletion is also present in other lineages, and thus has a background prevalence. In the attached dataset, x0 x1 and x2 are the counts of double negative, single positive and double positive droplets, respectively. 
+We will use wastewater RT-ddPCR data from Caduff et. al. [(https://doi.org/10.1101/2021.08.22.21262024)](https://doi.org/10.1101/2021.08.22.21262024). The assay targets SARS-CoV-2 S-gene HV69-70 deletion, a signature of the B.1.1.7 (Alpha) variant. However, the deletion is also present in other lineages, and thus has a background prevalence. In the attached dataset, x0 x1 and x2 are the counts of double negative, single positive and double positive droplets, respectively. 
 
 ```{r}
 str(dPCRdat_HV6970)
