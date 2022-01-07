@@ -1,5 +1,3 @@
-Again, fixed the last URLs.
+Fixed the single quotes and DOI URL in description.
 
-R-hub checks pass without notes (except from spellcheck that trips on acronyms), on all different servers.
-
-Thanks for your patience and have a nice day.
+Thanks a lot and have a nice day.
