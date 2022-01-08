@@ -1,3 +1,3 @@
-Fixed the single quotes and DOI URL in description.
+Fixed the DOI in description.
 
-Thanks a lot and have a nice day.
+Thanks a lot and have a nice day!
